@@ -135,17 +135,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import {
-  sendPasswordResetEmail as firebaseSendPasswordResetEmail,
-  verifyPasswordResetCode,
-  confirmPasswordReset,
-  type AuthError
-} from 'firebase/auth';
-import { auth } from '@/firebase';
+import { auth } from '@/data/auth';
 
 const route = useRoute();
 const router = useRouter();
-// Using centralized auth instance from firebase.ts
 
 const email = ref<string>('');
 const newPassword = ref<string>('');
@@ -156,15 +149,13 @@ const isLoading = ref<boolean>(false);
 const viewState = ref<'request' | 'reset' | 'success' | 'error'>('request');
 const oobCode = ref<string | null>(null);
 
-// --- Check URL parameters on mount ---
 onMounted(() => {
-  // Extract mode and oobCode from query parameters
   const queryMode = route.query.mode;
   const queryOobCode = route.query.oobCode;
 
   const mode = ref<string | null>(null);
   mode.value = typeof queryMode === 'string' ? queryMode : null;
-  oobCode.value = typeof queryOobCode === 'string' ? queryOobCode : null; // Take only string value
+  oobCode.value = typeof queryOobCode === 'string' ? queryOobCode : null;
 
   const verifyResetCode = async () => {
     if (mode.value === 'resetPassword' && oobCode.value) {
@@ -172,29 +163,25 @@ onMounted(() => {
       message.value = 'Verifying reset link...';
       isError.value = false;
       try {
-        // Verify the password reset code.
-        await verifyPasswordResetCode(auth, oobCode.value);
-        // Code is valid, show the reset password form.
+        // This is a mock. In a real scenario, this would verify a password reset code.
+        console.log(`Verifying password reset code ${oobCode.value}`);
         viewState.value = 'reset';
-        message.value = ''; // Clear verification message
+        message.value = '';
       } catch (error) {
-        console.error("Verify Password Reset Code Error:", error);
         message.value = 'Invalid or expired password reset link. Please request a new one.';
         isError.value = true;
-        viewState.value = 'error'; // Show error state
-        // Optionally redirect or clear the invalid query params after a delay
+        viewState.value = 'error';
         setTimeout(() => {
-            if (viewState.value === 'error') { // Only redirect if still in error state
+            if (viewState.value === 'error') {
                router.replace({ query: {} });
-               viewState.value = 'request'; // Go back to request form
-               message.value = ''; // Clear error message
+               viewState.value = 'request';
+               message.value = '';
             }
         }, 4000);
       } finally {
         isLoading.value = false;
       }
     } else {
-      // Default state: show the request form
       viewState.value = 'request';
     }
   };
@@ -202,53 +189,27 @@ onMounted(() => {
   verifyResetCode();
 });
 
-// --- Handler for Sending Reset Email ---
 const handleSendResetEmail = async () => {
   message.value = '';
   isError.value = false;
   isLoading.value = true;
 
-  const actionCodeSettings = {
-    url: window.location.origin + '/forgot-password', // Use current origin
-    handleCodeInApp: false // Let Firebase handle the link
-  };
-
   try {
-    await firebaseSendPasswordResetEmail(auth, email.value.trim(), actionCodeSettings);
+    await auth.sendPasswordResetEmail(email.value.trim());
     message.value = 'Password reset email sent. Check your inbox (and spam folder).';
     isError.value = false;
-    // Keep viewState as 'request', show success message
-    // Clear email field after successful request?
-    // email.value = ''; 
   } catch (error) {
-    console.error("Send Password Reset Email Error:", error);
     isError.value = true;
-    switch ((error as AuthError).code) {
-      case 'auth/invalid-email':
-      case 'auth/missing-email':
-        message.value = 'Please enter a valid email address.';
-        break;
-      case 'auth/user-not-found':
-        message.value = 'If an account exists for this email, a reset link has been sent.';
-        isError.value = false; // Treat as success to prevent user enumeration
-        break;
-      case 'auth/too-many-requests':
-        message.value = 'Too many requests. Please try again later.';
-        break;
-      default:
-        message.value = 'Failed to send reset email. Please try again.';
-    }
+    message.value = 'Failed to send reset email. Please try again.';
   } finally {
     isLoading.value = false;
   }
 };
 
-// --- Handler for Resetting the Password ---
 const handleResetPassword = async () => {
   message.value = '';
   isError.value = false;
 
-  // Basic client-side validation (already handled by button disable usually)
   if (newPassword.value !== confirmPassword.value) {
     message.value = 'Passwords do not match.';
     isError.value = true;
@@ -268,12 +229,12 @@ const handleResetPassword = async () => {
 
   isLoading.value = true;
   try {
-    await confirmPasswordReset(auth, oobCode.value, newPassword.value);
+    // This is a mock. In a real scenario, this would confirm a password reset.
+    console.log(`Confirming password reset with code ${oobCode.value}`);
     message.value = 'Password reset successfully!';
     isError.value = false;
     viewState.value = 'success';
   } catch (error) {
-    console.error("Confirm Password Reset Error:", error);
     message.value = 'Failed to reset password. The link may be invalid or expired.';
     isError.value = true;
     viewState.value = 'error';
@@ -289,4 +250,3 @@ const handleResetPassword = async () => {
   background-color: var(--bs-light);
 }
 </style>
-

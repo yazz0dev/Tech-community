@@ -1,0 +1,96 @@
+[
+  {
+    "uid": "user1",
+    "name": "Alice",
+    "email": "alice@example.com",
+    "photoURL": null,
+    "batch": "2023",
+    "batchYear": 2023,
+    "studentId": "S001",
+    "bio": "A passionate developer.",
+    "skills": ["JavaScript", "Vue.js", "Node.js"],
+    "hasLaptop": true,
+    "socialLinks": {
+      "github": "https://github.com/alice"
+    },
+    "createdAt": "2023-01-15T10:00:00.000Z",
+    "lastLogin": "2024-10-10T10:00:00.000Z"
+  },
+  {
+    "uid": "user2",
+    "name": "Bob",
+    "email": "bob@example.com",
+    "photoURL": null,
+    "batch": "2023",
+    "batchYear": 2023,
+    "studentId": "S002",
+    "bio": "A design enthusiast.",
+    "skills": ["Figma", "UI/UX", "HTML", "CSS"],
+    "hasLaptop": true,
+    "socialLinks": {
+      "linkedin": "https://linkedin.com/in/bob"
+    },
+    "createdAt": "2023-01-16T11:00:00.000Z",
+    "lastLogin": "2024-10-11T11:00:00.000Z"
+  },
+  {
+    "uid": "user3",
+    "name": "Charlie",
+    "email": "charlie@example.com",
+    "photoURL": null,
+    "batch": "2024",
+    "batchYear": 2024,
+    "studentId": "S003",
+    "bio": null,
+    "skills": ["Python", "Django"],
+    "hasLaptop": false,
+    "socialLinks": {},
+    "createdAt": "2024-02-20T12:00:00.000Z",
+    "lastLogin": "2024-10-09T12:00:00.000Z"
+  },
+  {
+    "uid": "user4",
+    "name": "David",
+    "email": "david@example.com",
+    "photoURL": null,
+    "batch": "2024",
+    "batchYear": 2024,
+    "studentId": "S004",
+    "bio": "A data science student.",
+    "skills": ["Python", "Pandas", "NumPy"],
+    "hasLaptop": true,
+    "socialLinks": {},
+    "createdAt": "2024-02-21T13:00:00.000Z",
+    "lastLogin": "2024-10-08T13:00:00.000Z"
+  },
+  {
+    "uid": "user5",
+    "name": "Eve",
+    "email": "eve@example.com",
+    "photoURL": null,
+    "batch": "2025",
+    "batchYear": 2025,
+    "studentId": "S005",
+    "bio": null,
+    "skills": [],
+    "hasLaptop": true,
+    "socialLinks": {},
+    "createdAt": "2025-03-25T14:00:00.000Z",
+    "lastLogin": "2025-10-07T14:00:00.000Z"
+  },
+  {
+    "uid": "user6",
+    "name": "Frank",
+    "email": "frank@example.com",
+    "photoURL": null,
+    "batch": "2025",
+    "batchYear": 2025,
+    "studentId": "S006",
+    "bio": null,
+    "skills": [],
+    "hasLaptop": false,
+    "socialLinks": {},
+    "createdAt": "2025-03-26T15:00:00.000Z",
+    "lastLogin": "2025-10-06T15:00:00.000Z"
+  }
+]

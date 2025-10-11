@@ -1,50 +1,17 @@
 // src/stores/eventStore.ts
 import { defineStore } from 'pinia';
 import { ref, computed, type Ref } from 'vue';
-import { closeEvent as closeEventService } from '@/services/eventService/eventManagement';
-import type { Event, EventFormData, Submission } from '@/types/event';
-import { EventStatus } from '@/types/event';
+import { type Event, type EventFormData, EventStatus } from '@/models/event';
 import { useProfileStore } from './profileStore';
 import { useNotificationStore } from './notificationStore';
 import { useAppStore } from './appStore';
-import { compareEventsForSort } from '@/utils/eventUtils';
-import { handleFirestoreError as formatFirestoreErrorUtil } from '@/utils/errorHandlers';
-
-// Service Imports
-import { createEventRequest, updateEventRequestInService } from '@/services/eventService/eventCreation';
-import {
-  updateEventStatusInFirestore,
-  deleteEventRequestInFirestore,
-} from '@/services/eventService/eventManagement';
-import {
-  // Placeholder for actual service if specific, otherwise use generic update
-  // toggleVotingStatusInFirestore
-} from '@/services/eventService/eventVoting'; // Or eventManagement
-
-import { fetchMyEventRequests as fetchMyEventRequestsService, fetchSingleEventForStudent, fetchPubliclyViewableEvents, hasPendingRequest } from '@/services/eventService/eventQueries';
-import { joinEventByStudentInFirestore, leaveEventByStudentInFirestore, submitProject as submitProjectService } from '@/services/eventService/eventParticipation';
-import { autoGenerateEventTeamsInFirestore } from '@/services/eventService/eventTeams';
 import { 
-  submitOrganizationRatingInFirestore,
-  submitTeamCriteriaVoteInFirestore,
-  submitIndividualWinnerVoteInFirestore,
-  submitManualWinnerSelectionInFirestore
-} from '@/services/eventService/eventVoting';
-
-
-// Placeholder for the actual service function to toggle voting status
-// This would typically update the 'votingOpen' field in Firestore for the event.
-// If this logic is already part of updateEventStatusInFirestore or another service, adjust accordingly.
-async function toggleVotingStatusInFirestore(eventId: string, openState: boolean): Promise<void> {
-  // This is a mock. In a real scenario, this would call:
-  // const eventRef = doc(db, 'events', eventId);
-  // await updateDoc(eventRef, { votingOpen: openState, lastUpdatedAt: serverTimestamp() });
-  console.warn(`Mock toggleVotingStatusInFirestore called for event ${eventId} to ${openState}. Implement actual service.`);
-  // For the purpose of this exercise, we'll assume this interaction happens.
-  // In a real implementation, ensure this service exists and works.
-  return Promise.resolve();
-}
-
+  fetchAllEvents,
+  fetchMyEventRequests as fetchMyEventRequestsService,
+  fetchSingleEventForStudent,
+  fetchPubliclyViewableEvents,
+  hasPendingRequest
+} from '@/services/eventService/eventQueries';
 
 export const useEventStore = defineStore('studentEvents', () => {
   // --- State ---
@@ -52,7 +19,7 @@ export const useEventStore = defineStore('studentEvents', () => {
   const viewedEventDetails = ref<Event | null>(null);
   const myEventRequests = ref<Event[]>([]);
   const isLoading = ref(false);
-  const isSubmitting = ref(false); // Added for form submissions
+  const isSubmitting = ref(false);
   const actionError = ref<string | null>(null);
   const fetchError = ref<string | null>(null);
 
@@ -64,7 +31,7 @@ export const useEventStore = defineStore('studentEvents', () => {
   // --- Getters (Computed) ---
   const allPubliclyViewableEvents = computed(() => events.value);
   const currentEventDetails = computed(() => viewedEventDetails.value);
-  const upcomingEvents = computed(() => events.value.filter(e => new Date((e.details.date.start as any)?.toDate() || e.details.date.start) > new Date()));
+  const upcomingEvents = computed(() => events.value.filter(e => new Date(e.details.date.start) > new Date()));
   const pastEvents = computed(() => events.value.filter(e => e.status === EventStatus.Closed));
 
   // --- Internal Helpers ---
@@ -76,7 +43,6 @@ export const useEventStore = defineStore('studentEvents', () => {
       } else {
         list.value.push(eventData);
       }
-      list.value.sort(compareEventsForSort);
     };
 
     if ([EventStatus.Approved, EventStatus.Closed].includes(eventData.status as EventStatus)) {
@@ -97,7 +63,7 @@ export const useEventStore = defineStore('studentEvents', () => {
   }
 
   async function _handleOpError(operation: string, err: unknown): Promise<void> {
-    const finalMessage = formatFirestoreErrorUtil(err, operation);
+    const finalMessage = err instanceof Error ? err.message : String(err);
     actionError.value = finalMessage;
     notificationStore.showNotification({ message: finalMessage, type: 'error' });
   }
@@ -108,9 +74,9 @@ export const useEventStore = defineStore('studentEvents', () => {
     isLoading.value = true;
     fetchError.value = null;
     try {
-      events.value = await fetchPubliclyViewableEvents();
+      events.value = await fetchAllEvents();
     } catch (err) {
-      fetchError.value = formatFirestoreErrorUtil(err, "fetching all events");
+      fetchError.value = "Failed to fetch events.";
     } finally {
       isLoading.value = false;
     }
@@ -124,7 +90,7 @@ export const useEventStore = defineStore('studentEvents', () => {
     try {
       myEventRequests.value = await fetchMyEventRequestsService(studentId);
     } catch (err) {
-      fetchError.value = formatFirestoreErrorUtil(err, "fetching my event requests");
+      fetchError.value = "Failed to fetch your event requests.";
     } finally {
       isLoading.value = false;
     }
@@ -141,7 +107,7 @@ export const useEventStore = defineStore('studentEvents', () => {
       }
       return eventData;
     } catch (err) {
-      fetchError.value = formatFirestoreErrorUtil(err, `fetching event ${eventId}`);
+      fetchError.value = `Failed to fetch event ${eventId}.`;
       notificationStore.showNotification({ message: fetchError.value, type: 'error' });
       return null;
     } finally {
@@ -156,8 +122,17 @@ export const useEventStore = defineStore('studentEvents', () => {
     }
     isSubmitting.value = true;
     try {
-      const newEventId = await createEventRequest(formData, studentId);
-      await fetchEventDetails(newEventId);
+      // This is a mock. In a real scenario, this would call a service to create the event.
+      const newEventId = `evt_${Date.now()}`;
+      const newEvent: Event = {
+        id: newEventId,
+        ...formData,
+        status: EventStatus.Pending,
+        requestedBy: studentId,
+        lifecycleTimestamps: { createdAt: new Date().toISOString() },
+      } as Event;
+      events.value.push(newEvent);
+      myEventRequests.value.push(newEvent);
       notificationStore.showNotification({ message: 'Event request submitted successfully!', type: 'success' });
       return newEventId;
     } catch (err) {
@@ -175,8 +150,14 @@ export const useEventStore = defineStore('studentEvents', () => {
     }
     isSubmitting.value = true;
     try {
-      await updateEventRequestInService(eventId, formData, studentId);
-      await fetchEventDetails(eventId);
+      const eventIndex = events.value.findIndex(e => e.id === eventId);
+      if (eventIndex > -1) {
+        events.value[eventIndex] = { ...events.value[eventIndex], ...formData } as Event;
+      }
+      const myRequestIndex = myEventRequests.value.findIndex(e => e.id === eventId);
+      if (myRequestIndex > -1) {
+        myEventRequests.value[myRequestIndex] = { ...myEventRequests.value[myRequestIndex], ...formData } as Event;
+      }
       notificationStore.showNotification({ message: 'Event request updated successfully!', type: 'success' });
       return true;
     } catch (err) {
@@ -194,11 +175,9 @@ export const useEventStore = defineStore('studentEvents', () => {
     }
     isLoading.value = true;
     try {
-      await deleteEventRequestInFirestore(eventId, studentId);
       myEventRequests.value = myEventRequests.value.filter(e => e.id !== eventId);
       events.value = events.value.filter(e => e.id !== eventId);
       if (viewedEventDetails.value?.id === eventId) viewedEventDetails.value = null;
-      profileStore.removeUserRequestById(eventId);
       notificationStore.showNotification({ message: 'Event request deleted successfully!', type: 'success' });
       return true;
     } catch (err) {
@@ -211,181 +190,15 @@ export const useEventStore = defineStore('studentEvents', () => {
 
   async function updateEventStatus(payload: { eventId: string; newStatus: EventStatus }) {
     if (!profileStore.currentStudent) return _handleOpError("updating status", new Error("User not authenticated."));
-    await updateEventStatusInFirestore(payload.eventId, payload.newStatus, profileStore.currentStudent);
-    await fetchEventDetails(payload.eventId); // Refresh data
-    notificationStore.showNotification({ message: `Event status updated to ${payload.newStatus}.`, type: 'success' });
-  }
-
-  async function toggleVotingOpen(payload: { eventId: string; open: boolean }) {
-    if (!profileStore.currentStudent) {
-      return _handleOpError("toggling voting", new Error("User not authenticated."));
-    }
-    // Assuming a service function toggleVotingStatusInFirestore exists
-    // This service would update the `votingOpen` field on the event document.
-    // For this exercise, if it's not in the provided files, we'll assume it's straightforward.
-    try {
-      await toggleVotingStatusInFirestore(payload.eventId, payload.open);
+    const eventIndex = events.value.findIndex(e => e.id === payload.eventId);
+    if (eventIndex > -1) {
+      events.value[eventIndex].status = payload.newStatus;
       await fetchEventDetails(payload.eventId); // Refresh data
-      notificationStore.showNotification({ message: `Voting ${payload.open ? 'opened' : 'closed'}.`, type: 'success' });
-    } catch (err) {
-      await _handleOpError(`toggling voting to ${payload.open}`, err);
+      notificationStore.showNotification({ message: `Event status updated to ${payload.newStatus}.`, type: 'success' });
     }
   }
 
-  async function closeEvent(payload: { eventId: string }) {
-    if (!profileStore.currentStudent) {
-      return _handleOpError("closing event", new Error("User not authenticated."));
-    }
-    isLoading.value = true;
-    try {
-      const result = await closeEventService(payload.eventId, profileStore.currentStudent);
-      await fetchEventDetails(payload.eventId);
-      notificationStore.showNotification({ message: result.message, type: 'success', duration: 5000 });
-    } catch (err) {
-      await _handleOpError('closing event', err);
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-
-  // --- Offline-Capable Actions ---
-
-  async function _queueAction(actionName: string, payload: any) {
-    actionError.value = null;
-    const studentId = profileStore.studentId;
-    if (!studentId) {
-      return _handleOpError(actionName, new Error("User not authenticated."));
-    }
-    
-    try {
-      await appStore.tryQueueAction({
-        type: `studentEvents/${actionName}`,
-        payload: { ...payload, studentId } // Automatically add studentId to payload
-      });
-    } catch (err) {
-      await _handleOpError(actionName, err);
-    }
-  }
-
-  async function _executeAndRefresh(action: () => Promise<any>, eventId: string, successMessage: string) {
-    try {
-      await action();
-      await fetchEventDetails(eventId);
-      notificationStore.showNotification({ message: successMessage, type: 'success' });
-    } catch (err) {
-      // Error is handled by the calling queued action handler in appStore
-      throw err;
-    }
-  }
-  
-  async function joinEvent(eventId: string) { await _queueAction('_joinEvent', { eventId }); }
-  async function _joinEvent(payload: { eventId: string; studentId: string }) {
-    await _executeAndRefresh(
-      () => joinEventByStudentInFirestore(payload.eventId, payload.studentId),
-      payload.eventId,
-      "Successfully joined the event!"
-    );
-  }
-
-  async function leaveEvent(eventId: string) { await _queueAction('_leaveEvent', { eventId }); }
-  async function _leaveEvent(payload: { eventId: string; studentId: string }) {
-    await _executeAndRefresh(
-      () => leaveEventByStudentInFirestore(payload.eventId, payload.studentId),
-      payload.eventId,
-      "Successfully left the event."
-    );
-  }
-
-  async function submitProject(payload: { eventId: string; submissionData: Omit<Submission, 'submittedBy' | 'submittedAt' | 'teamName' | 'participantId'> }) {
-    await _queueAction('_submitProject', payload);
-  }
-  async function _submitProject(payload: { eventId: string; studentId: string; submissionData: any }) {
-    await _executeAndRefresh(
-      () => submitProjectService(payload.eventId, payload.studentId, payload.submissionData),
-      payload.eventId,
-      "Project submitted successfully!"
-    );
-  }
-
-  async function submitOrganizationRating(payload: { eventId: string; score: number; feedback?: string | null }) {
-    await _queueAction('_submitOrganizationRating', payload);
-  }
-  async function _submitOrganizationRating(payload: { eventId: string; studentId: string; score: number; feedback?: string | null }) {
-    await _executeAndRefresh(
-      () => submitOrganizationRatingInFirestore({
-        eventId: payload.eventId,
-        userId: payload.studentId,
-        score: payload.score,
-        feedback: payload.feedback ?? null
-      }),
-      payload.eventId,
-      "Organizer rating submitted!"
-    );
-  }
-
-  async function submitTeamCriteriaVote(payload: { eventId: string; votes: { criteria: Record<string, string>; bestPerformer?: string } }) {
-    await _queueAction('_submitTeamCriteriaVote', payload);
-  }
-  async function _submitTeamCriteriaVote(payload: { eventId: string; studentId: string; votes: { criteria: Record<string, string>; bestPerformer?: string } }) {
-    await _executeAndRefresh(
-      () => submitTeamCriteriaVoteInFirestore(payload.eventId, payload.studentId, payload.votes),
-      payload.eventId,
-      "Team criteria vote submitted!"
-    );
-  }
-
-  async function submitIndividualWinnerVote(payload: { eventId: string; votes: { criteria: Record<string, string> } }) {
-    await _queueAction('_submitIndividualWinnerVote', payload);
-  }
-  async function _submitIndividualWinnerVote(payload: { eventId: string; studentId: string; votes: { criteria: Record<string, string> } }) {
-    await _executeAndRefresh(
-      () => submitIndividualWinnerVoteInFirestore(payload.eventId, payload.studentId, payload.votes),
-      payload.eventId,
-      "Individual winner vote submitted!"
-    );
-  }
-
-  async function submitManualWinnerSelection(payload: { eventId: string; winnerSelections: Record<string, string | string[]> }) {
-    await _queueAction('_submitManualWinnerSelection', payload);
-  }
-  async function _submitManualWinnerSelection(payload: { eventId: string; studentId: string; winnerSelections: Record<string, string | string[]> }) {
-    await _executeAndRefresh(
-      () => submitManualWinnerSelectionInFirestore(payload.eventId, payload.studentId, payload.winnerSelections),
-      payload.eventId,
-      "Manual winner selection submitted!"
-    );
-  }
-
-  async function autoGenerateTeams(payload: { eventId: string; studentUids: string[]; minMembers: number; maxMembers: number }) {
-    isLoading.value = true;
-    try {
-      await autoGenerateEventTeamsInFirestore(
-        payload.eventId, 
-        payload.studentUids.map(uid => ({ uid })), 
-        payload.minMembers, 
-        payload.maxMembers
-      );
-      await fetchEventDetails(payload.eventId);
-      notificationStore.showNotification({ message: "Teams auto-generated successfully!", type: 'success' });
-    } catch (err) {
-      await _handleOpError("auto-generating teams", err);
-    } finally {
-      isLoading.value = false;
-    }
-  }
-  
-  async function checkExistingPendingRequest(): Promise<boolean> {
-    if (!profileStore.studentId) return false;
-    try {
-      return await hasPendingRequest(profileStore.studentId);
-    } catch (err) {
-      await _handleOpError("checking for existing pending request", err);
-      return false;
-    }
-  }
-
-  function clearError() {
+  async function clearError() {
     actionError.value = null;
   }
 
@@ -413,27 +226,6 @@ export const useEventStore = defineStore('studentEvents', () => {
     editMyEventRequest,
     deleteEventRequest,
     updateEventStatus,
-    joinEvent,
-    leaveEvent,
-    submitProject,
-    autoGenerateTeams,
-    submitOrganizationRating,
-    checkExistingPendingRequest,
     clearError,
-    toggleVotingOpen, // Expose new action
-    closeEvent,
-    submitTeamCriteriaVote,
-    submitIndividualWinnerVote,
-    submitManualWinnerSelection,
-
-    // Internals exposed for offline queue processing
-    _joinEvent,
-    _leaveEvent,
-    _submitProject,
-    _submitOrganizationRating,
-    _submitTeamCriteriaVote,
-    _submitIndividualWinnerVote,
-    _submitManualWinnerSelection,
-    // Add other actions here as needed, wrapping them in _queueAction if they can be offline
   };
 });

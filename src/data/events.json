@@ -1,0 +1,119 @@
+[
+  {
+    "id": "event1",
+    "details": {
+      "eventName": "Tech Conference 2024",
+      "description": "An annual conference for tech enthusiasts.",
+      "format": "MultiEvent",
+      "isCompetition": true,
+      "organizers": ["user1"],
+      "coreParticipants": ["user2", "user3"],
+      "type": "Conference",
+      "date": {
+        "start": "2024-10-20T09:00:00.000Z",
+        "end": "2024-10-22T17:00:00.000Z"
+      },
+      "allowProjectSubmission": true,
+      "phases": [
+        {
+          "id": "phase1",
+          "phaseName": "Keynote & Workshops",
+          "description": "Opening keynotes and hands-on workshops.",
+          "format": "Individual",
+          "type": "Workshop",
+          "participants": ["user2", "user3"],
+          "coreParticipants": ["user2", "user3"],
+          "criteria": [],
+          "teams": [],
+          "rules": null,
+          "prize": null,
+          "allowProjectSubmission": false
+        },
+        {
+          "id": "phase2",
+          "phaseName": "Hackathon",
+          "description": "A 24-hour hackathon to build innovative projects.",
+          "format": "Team",
+          "type": "Hackathon",
+          "participants": ["user2", "user3"],
+          "coreParticipants": [],
+          "criteria": [],
+          "teams": [
+            {
+              "id": "team1",
+              "teamName": "The Coders",
+              "members": ["user2", "user3"],
+              "teamLead": "user2"
+            }
+          ],
+          "rules": "Teams of 2-4 members.",
+          "prize": "MacBook Pro for each member of the winning team.",
+          "allowProjectSubmission": true
+        }
+      ]
+    },
+    "status": "Approved",
+    "requestedBy": "user1",
+    "votingOpen": false,
+    "lastUpdatedAt": "2024-09-15T10:00:00.000Z",
+    "participants": ["user1", "user2", "user3"],
+    "submissions": [],
+    "criteria": [],
+    "teams": [],
+    "organizerRatings": {},
+    "winners": {},
+    "criteriaVotes": {},
+    "bestPerformerSelections": {},
+    "rejectionReason": null,
+    "manuallySelectedBy": null,
+    "gallery": [],
+    "lifecycleTimestamps": {
+      "createdAt": "2024-09-01T12:00:00.000Z",
+      "approvedAt": "2024-09-05T14:00:00.000Z"
+    },
+    "teamMemberFlatList": ["user2", "user3"],
+    "xpAwardingStatus": "pending",
+    "xpAwardedAt": null,
+    "xpAwardError": null
+  },
+  {
+    "id": "event2",
+    "details": {
+      "eventName": "Design Workshop",
+      "description": "A workshop on UI/UX design principles.",
+      "format": "Individual",
+      "isCompetition": false,
+      "organizers": ["user4"],
+      "coreParticipants": ["user5", "user6"],
+      "type": "Workshop",
+      "date": {
+        "start": "2024-11-05T10:00:00.000Z",
+        "end": "2024-11-05T16:00:00.000Z"
+      },
+      "allowProjectSubmission": false
+    },
+    "status": "Approved",
+    "requestedBy": "user4",
+    "votingOpen": false,
+    "lastUpdatedAt": "2024-10-01T11:00:00.000Z",
+    "participants": ["user4", "user5", "user6"],
+    "submissions": [],
+    "criteria": [],
+    "teams": [],
+    "organizerRatings": {},
+    "winners": {},
+    "criteriaVotes": {},
+    "bestPerformerSelections": {},
+    "rejectionReason": null,
+    "manuallySelectedBy": null,
+    "gallery": [],
+    "lifecycleTimestamps": {
+      "createdAt": "2024-09-20T10:00:00.000Z",
+      "approvedAt": "2024-09-25T12:00:00.000Z"
+    },
+    "teamMemberFlatList": [],
+    "xpAwardingStatus": "completed",
+    "xpAwardedAt": "2024-11-06T10:00:00.000Z",
+    "xpAwardError": null
+  }
+]

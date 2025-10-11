@@ -1,8 +1,7 @@
 import { computed } from 'vue';
-import { signOut } from 'firebase/auth';
 import { useProfileStore } from '@/stores/profileStore';
 import { useAppStore } from '@/stores/appStore';
-import { auth as firebaseAuthInstance } from '@/firebase';
+import { auth as firebaseAuthInstance } from '@/data/auth';
 
 export function useAuth() {
   const profileStore = useProfileStore();
@@ -32,7 +31,7 @@ export function useAuth() {
    */
   const logout = async (): Promise<void> => {
     try {
-      await signOut(firebaseAuthInstance);
+      await firebaseAuthInstance.signOut();
       // The onAuthStateChanged listener in main.ts will trigger the profileStore.clearStudentSession.
       // No need to call it directly here.
     } catch (error) {

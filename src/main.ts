@@ -4,8 +4,7 @@ import { createPinia } from "pinia";
 import App from "@/App.vue";
 import router from "./router";
 import AuthGuard from "@/components/AuthGuard.vue";
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/firebase';
+import { auth } from '@/data/auth';
 import { initializeAuth } from '@/services/authService'; // Import the initialization function
 import { MotionPlugin } from '@vueuse/motion';
 
@@ -65,7 +64,7 @@ async function initializeApp() {
     window.__updateSW = updateSW;
 
     // Set up a single, definitive auth state listener
-    onAuthStateChanged(auth, async (user) => {
+    auth.onAuthStateChanged(async (user) => {
       try {
         // Delegate auth state handling directly to the profile store
         await profileStore.handleAuthStateChange(user);
@@ -77,12 +76,6 @@ async function initializeApp() {
         if (!appStore.hasFetchedInitialAuth) {
           appStore.setHasFetchedInitialAuth(true);
         }
-      }
-    }, (error) => {
-      console.error('Error in onAuthStateChanged listener:', error);
-      // Even on error, we mark the initial auth fetch as complete to unblock the UI
-      if (!appStore.hasFetchedInitialAuth) {
-        appStore.setHasFetchedInitialAuth(true);
       }
     });
 

@@ -24,7 +24,7 @@
                   </div>
                   <h2 class="h3 fw-bold gradient-text mb-1">Student Registration</h2>
                   <p class="text-subtitle mb-0">
-                    Join KSB Tech Community - Batch {{ batchYear || 'Unknown' }}
+                    Join Tech Community - Batch {{ batchYear || 'Unknown' }}
                   </p>
                 </div>
 
@@ -228,8 +228,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue';
 import { useRoute } from 'vue-router';
-import { collection, addDoc, Timestamp, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/firebase';
 import type { RegistrationFormData, signup } from '@/types/signup';
 import { validateSignupToken, isValidBatchYear, isBatchSignupActive } from '@/utils/signupUtils';
 
@@ -314,53 +312,8 @@ const validateSignupLink = async (): Promise<boolean> => {
 
 // Check if email or student ID already exists
 const checkExistingRegistration = async (email: string, studentId: string): Promise<boolean> => {
-  try {
-    if (!batchYear.value) {
-      errorMessage.value = 'Batch year not determined. Please try again.';
-      return false;
-    }
-
-    // Check registrations in the main signup collection (not nested)
-    const signupRef = collection(db, 'signup');
-    
-    // Check email across all student registrations (non-batch config docs)
-    const emailQuery = query(
-      signupRef, 
-      where('email', '==', email.toLowerCase()),
-      where('batchYear', '==', batchYear.value)
-    );
-    const emailSnapshot = await getDocs(emailQuery);
-    
-    // Filter out batch config documents
-    const emailRegistrations = emailSnapshot.docs.filter(doc => !doc.id.match(/^[0-9]{4}$/));
-    
-    if (emailRegistrations.length > 0) {
-      errorMessage.value = 'An account with this email address has already been registered for this batch.';
-      return false;
-    }
-
-    // Check student ID across all student registrations (non-batch config docs)
-    const studentIdQuery = query(
-      signupRef,
-      where('studentId', '==', studentId.toUpperCase()),
-      where('batchYear', '==', batchYear.value)
-    );
-    const studentIdSnapshot = await getDocs(studentIdQuery);
-    
-    // Filter out batch config documents
-    const studentIdRegistrations = studentIdSnapshot.docs.filter(doc => !doc.id.match(/^[0-9]{4}$/));
-    
-    if (studentIdRegistrations.length > 0) {
-      errorMessage.value = 'An account with this student ID has already been registered for this batch.';
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    console.error('Error checking existing registration:', error);
-    errorMessage.value = 'Error validating registration. Please try again.';
-    return false;
-  }
+  console.log(`Checking for existing registration for email: ${email} and studentId: ${studentId}`);
+  return true;
 };
 
 // Submit registration
@@ -400,7 +353,7 @@ const submitRegistration = async () => {
       bio: formData.bio?.trim() || '',
       skills: skills,
       status: 'pending_approval',
-      submittedAt: Timestamp.now(),
+      submittedAt: new Date().toISOString(),
       signupSource: {
         batch: batchYear.value,
         token: signupToken.value,
@@ -409,10 +362,7 @@ const submitRegistration = async () => {
       }
     };
 
-    // Submit to Firestore using the flat collection structure
-    const signupRef = collection(db, 'signup');
-    await addDoc(signupRef, registrationData);
-
+    console.log("Submitting registration data:", registrationData);
     submissionSuccess.value = true;
     
   } catch (error) {
@@ -441,7 +391,6 @@ const validateField = (field: keyof RegistrationFormData) => {
     case 'email':
       if (!formData.email) validationErrors.email = 'Email is required.';
       else if (!/^\S+@\S+\.\S+$/.test(formData.email)) validationErrors.email = 'Email is invalid.';
-      else if (!formData.email.endsWith('@ksb.ac.in')) validationErrors.email = 'Only @ksb.ac.in emails are allowed.';
       break;
     case 'studentId':
       if (!formData.studentId) validationErrors.studentId = 'Student ID is required.';
