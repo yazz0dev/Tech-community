@@ -9,9 +9,9 @@ import { databaseConfig } from '@/config/database.config';
 
 // Firebase config and initialization
 // Only initialize if Firebase is enabled
-let app: FirebaseApp | null = null;
-let db: Firestore | null = null;
-let auth: Auth | null = null;
+let app: FirebaseApp | undefined;
+let db: Firestore | undefined;
+let auth: Auth | undefined;
 
 if (databaseConfig.firebase?.enabled && databaseConfig.dataSource === 'firebase') {
     const firebaseConfig = {
@@ -33,6 +33,10 @@ if (databaseConfig.firebase?.enabled && databaseConfig.dataSource === 'firebase'
     auth = getAuth(app);
 }
 
-// Export with non-null assertion for backward compatibility
-// Services should check if Firebase is enabled before using these
+// Helper to check if Firebase is initialized
+export function isFirebaseEnabled(): boolean {
+    return !!auth && !!db;
+}
+
+// Export with undefined types - consumers must check isFirebaseEnabled()
 export { db, auth, app };
