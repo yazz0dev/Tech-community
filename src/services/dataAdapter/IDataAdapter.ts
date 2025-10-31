@@ -2,7 +2,7 @@
 // This allows switching between static JSON data and Firebase/other databases
 
 import type { Event } from '@/types/event';
-import type { Student } from '@/types/student';
+import type { StudentAppModel as Student } from '@/types/student';
 
 export interface IDataAdapter {
   // Event operations

@@ -3,7 +3,7 @@
 
 import type { IDataAdapter } from './IDataAdapter';
 import type { Event } from '@/types/event';
-import type { Student } from '@/types/student';
+import type { StudentAppModel as Student } from '@/types/student';
 import { databaseConfig } from '@/config/database.config';
 
 export class StaticDataAdapter implements IDataAdapter {
@@ -38,7 +38,7 @@ export class StaticDataAdapter implements IDataAdapter {
   async createEvent(event: Omit<Event, 'id'>): Promise<Event> {
     // In static mode, we can't persist changes
     // You could use localStorage for temporary persistence
-    const newEvent = { ...event, id: this.generateId() } as Event;
+    const newEvent: Event = { ...event, id: this.generateId() } as Event;
     const events = await this.getEvents();
     events.push(newEvent);
     this.eventsCache = events;

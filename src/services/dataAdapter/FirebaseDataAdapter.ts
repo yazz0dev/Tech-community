@@ -3,7 +3,7 @@
 
 import type { IDataAdapter } from './IDataAdapter';
 import type { Event } from '@/types/event';
-import type { Student } from '@/types/student';
+import type { StudentAppModel as Student } from '@/types/student';
 import { 
   collection, 
   doc, 
@@ -22,8 +22,11 @@ export class FirebaseDataAdapter implements IDataAdapter {
 
   constructor() {
     // Lazy load Firebase to avoid initialization errors in static mode
-    const { db } = require('@/firebase');
-    this.db = db;
+    const firebase = require('@/firebase');
+    if (!firebase.db) {
+      throw new Error('Firebase is not initialized. Set VITE_DATA_SOURCE=firebase and configure Firebase.');
+    }
+    this.db = firebase.db;
   }
 
   async getEvents(): Promise<Event[]> {
@@ -57,7 +60,15 @@ export class FirebaseDataAdapter implements IDataAdapter {
 
   async getStudents(): Promise<Student[]> {
     const snapshot = await getDocs(collection(this.db, 'students'));
-    return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as Student));
+    return snapshot.docs.map(doc => {
+      const data = doc.data();
+      return { 
+        uid: doc.id, 
+        email: data.email || null,
+        name: data.name || null,
+        ...data 
+      } as Student;
+    });
   }
 
   async getStudent(id: string): Promise<Student | null> {
@@ -66,12 +77,23 @@ export class FirebaseDataAdapter implements IDataAdapter {
     if (!docSnap.exists()) {
       return null;
     }
-    return { uid: docSnap.id, ...docSnap.data() } as Student;
+    const data = docSnap.data();
+    return { 
+      uid: docSnap.id, 
+      email: data.email || null,
+      name: data.name || null,
+      ...data 
+    } as Student;
   }
 
   async createStudent(student: Omit<Student, 'uid'>): Promise<Student> {
     const docRef = await addDoc(collection(this.db, 'students'), student);
-    return { uid: docRef.id, ...student } as Student;
+    return { 
+      uid: docRef.id, 
+      email: null,
+      name: null,
+      ...student 
+    } as Student;
   }
 
   async updateStudent(id: string, updates: Partial<Student>): Promise<void> {
@@ -104,6 +126,14 @@ export class FirebaseDataAdapter implements IDataAdapter {
     
     const queryRef = query(q as any, ...constraints);
     const snapshot = await getDocs(queryRef);
-    return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as Student));
+    return snapshot.docs.map(doc => {
+      const data = doc.data();
+      return { 
+        uid: doc.id, 
+        email: data.email || null,
+        name: data.name || null,
+        ...data 
+      } as Student;
+    });
   }
 }

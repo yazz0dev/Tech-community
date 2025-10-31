@@ -6,10 +6,10 @@
         <transition name="fade-slide-down">
           <div>
             <h1 class="text-hero fw-bolder text-gradient-primary mb-3 mb-md-4">
-              Welcome to the <span class="brand-highlight">KSB Tech Community!</span>
+              Welcome to the <span class="brand-highlight">{{ communityConfig.name }}!</span>
             </h1>
             <p class="lead text-secondary mb-3 mb-md-4 mx-auto" style="max-width: 40rem;">
-              Manage events, collaborate on projects, and share resources within the KSB MCA community.
+              Manage events, collaborate on projects, and share resources within the {{ communityConfig.name }}.
             </p>
             <router-link
               to="/login"
@@ -111,7 +111,7 @@
                     Empowering <span class="brand-highlight">MCA Students</span> Through Technology
                   </h2>
                   <p class="lead text-secondary mb-4">
-                    The KSB Tech Community is where innovation meets education. We bridge the gap between academic learning and industry demands through hands-on projects, collaborative events, and peer-to-peer growth.
+                    The {{ communityConfig.name }} is where innovation meets education. We bridge the gap between academic learning and industry demands through hands-on projects, collaborative events, and peer-to-peer growth.
                   </p>
                 </div>
                 
@@ -184,7 +184,7 @@
               <div>
                 <h3 class="fw-bold text-primary mb-3"><i class="fas fa-hand-holding-heart me-2" aria-hidden="true"></i> Sponsor the Tech Community</h3>
                 <p class="text-secondary mb-2">
-                  We welcome sponsorships and partnerships from organizations, companies, and individuals who wish to support student innovation and skill development. Sponsoring the KSB Tech Community helps us organize more impactful events, provide better resources, and empower the next generation of tech professionals.
+                  We welcome sponsorships and partnerships from organizations, companies, and individuals who wish to support student innovation and skill development. Sponsoring the {{ communityConfig.name }} helps us organize more impactful events, provide better resources, and empower the next generation of tech professionals.
                 </p>
                 <p class="text-secondary mb-2">
                   If you are interested in sponsoring or collaborating with us, please contact the MCA department at KMCT School Of Business or reach out via our social channels below.
@@ -224,7 +224,7 @@
     <footer class="landing-footer mt-5 py-4 border-top">
       <div class="container">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-           <p class="text-muted small mb-0">&copy; {{ new Date().getFullYear() }} KSB Tech Community. All rights reserved.</p>
+           <p class="text-muted small mb-0">&copy; {{ new Date().getFullYear() }} {{ communityConfig.name }}. All rights reserved.</p>
            <div class="d-flex gap-3">
              <router-link to="/legal" class="text-muted small text-decoration-none">Terms & Privacy</router-link>
            </div>
@@ -239,6 +239,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { communityConfig } from '@/config/community.config';
 
 interface Feature {
     icon: string;
