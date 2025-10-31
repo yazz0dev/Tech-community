@@ -1,46 +1,49 @@
-# KSB Tech Community
+# Tech Community Platform
 
-A modern web platform for the KSB Tech Community, enabling students to participate in events, collaborate on projects, and grow together through hands-on learning experiences.
+An open-source web platform for tech communities, enabling members to participate in events, collaborate on projects, and grow together through hands-on learning experiences.
+
+**Built with Vue 3 + TypeScript + Vite | Works with or without a database**
 
 ## 🚀 Features
 
-### For Students
-- **Event Management**: Browse, join, and participate in tech events
-- **Project Submissions**: Submit projects for events and competitions
-- **Team Collaboration**: Form teams and work together on projects
-- **XP System**: Earn experience points for participation and achievements
-- **Profile Management**: Maintain personal profiles with skills and bio
-- **Real-time Notifications**: Stay updated with event announcements
+### Core Features
+- **Event Management**: Browse, create, join, and participate in tech events
+- **Multiple Event Formats**: Support for Individual, Team, and Multi-Phase events
+- **Project Submissions**: Submit and showcase projects for events
+- **Team Collaboration**: Form teams and work together
+- **XP System**: Earn experience points for participation and achievements (optional)
+- **Profile Management**: Personal profiles with skills and bio
+- **Real-time Updates**: Live synchronization when using Firebase (optional)
 
-### For Admins
-- **Event Administration**: Create, approve, and manage events
-- **Student Management**: Oversee student registrations and profiles
-- **Analytics Dashboard**: Track participation and engagement
-- **Content Moderation**: Review submissions and maintain quality
-
-### Technical Features
+### Technical Highlights
+- **No Database Required**: Runs with static JSON data out of the box
+- **Database Flexible**: Easy integration with Firebase or custom backends
+- **Fully Customizable**: Configure branding, colors, and features via environment variables
 - **Progressive Web App (PWA)**: Installable with offline capabilities
 - **Responsive Design**: Works seamlessly on desktop and mobile
-- **Real-time Updates**: Live synchronization across devices
-- **Secure Authentication**: Firebase Auth with role-based access
-- **Image Optimization**: Automatic compression and optimization
+- **TypeScript**: Full type safety throughout the codebase
+- **Modern Stack**: Vue 3 Composition API, Pinia, Vite
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **Vue 3** - Progressive JavaScript framework
-- **TypeScript** - Type-safe JavaScript
+- **Vue 3** - Progressive JavaScript framework with Composition API
+- **TypeScript** - Type-safe JavaScript for better DX
 - **Vite** - Fast build tool and development server
-- **Pinia** - State management
+- **Pinia** - Intuitive state management
 - **Vue Router** - Client-side routing
-- **Bootstrap 5** - CSS framework
+- **Bootstrap 5** - Responsive CSS framework
 - **SCSS** - Enhanced CSS with variables and mixins
 
-### Backend & Services
-- **Firebase Firestore** - NoSQL database
+### Data Layer (Flexible)
+- **Static JSON** - Default, no backend required (perfect for getting started)
+- **Firebase Firestore** - Optional NoSQL cloud database
+- **Custom Database** - Easy to integrate your own backend via adapters
+
+### Optional Services
 - **Firebase Authentication** - User authentication
 - **Firebase Storage** - File storage
-- **Firebase Hosting** - Static site hosting
+- **OneSignal** - Push notifications
 
 ### Development Tools
 - **ESLint** - Code linting
@@ -50,192 +53,291 @@ A modern web platform for the KSB Tech Community, enabling students to participa
 
 ## 📋 Prerequisites
 
-- **Node.js** (v18 or higher)
-- **PNPM** (recommended) or npm
-- **Firebase CLI** (for deployment)
-- **Git**
+- **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
+- **npm** or **pnpm** (comes with Node.js)
+- **Git** - For cloning the repository
+- **Firebase project** (optional, only if you want to use Firebase instead of static data)
 
 ## 🚀 Quick Start
 
 ### 1. Clone the Repository
 ```bash
-git clone <repository-url>
-cd ksb-sw-community
+git clone https://github.com/yourusername/tech-community.git
+cd tech-community
 ```
 
 ### 2. Install Dependencies
 ```bash
-pnpm install
-# or
 npm install
-```
-
-### 3. Environment Setup
-Create a `.env` file in the root directory:
-```env
-VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-```
-
-### 4. Firebase Setup
-```bash
-# Install Firebase CLI
-npm install -g firebase-tools
-
-# Login to Firebase
-firebase login
-
-# Initialize project (if not already done)
-firebase init
-
-# Deploy Firestore rules and indexes
-firebase deploy --only firestore
-```
-
-### 5. Development Server
-```bash
-pnpm dev
 # or
+pnpm install
+```
+
+### 3. Configure Your Community
+Copy the example environment file:
+```bash
+cp .env.example .env
+```
+
+Edit `.env` to customize your community:
+```env
+VITE_COMMUNITY_NAME="Your Tech Community"
+VITE_COMMUNITY_SHORT_NAME="YourTech"
+VITE_COMMUNITY_EMAIL="info@yourtechcommunity.dev"
+
+# Use static data (no database required)
+VITE_DATA_SOURCE=static
+```
+
+**That's it!** You're ready to run.
+
+### 4. Start Development Server
+```bash
 npm run dev
 ```
 
 The application will be available at `http://localhost:5173`
 
+### 5. (Optional) Add Sample Data
+Edit JSON files in `public/data/`:
+- `events.json` - Add sample events
+- `students.json` - Add demo users
+
+See `public/data/README.md` for examples.
+
+## 📚 Documentation
+
+Comprehensive guides in the `docs/` folder:
+
+- **[Getting Started](docs/getting-started.md)** - Detailed setup guide
+- **[Architecture Overview](docs/architecture.md)** - System design and structure
+- **[Database Setup](docs/database-setup.md)** - Configure data sources (Static JSON, Firebase, or Custom)
+- **[Event Lifecycle](docs/event-lifecycle.md)** - How events work, including multi-event support
+- **[Building Admin Panel](docs/building-admin-panel.md)** - Create admin interfaces
+- **[Student Signup Feature](docs/student-signup-feature.md)** - User registration system
+
 ## 🏗️ Project Structure
 
 ```
-src/
-├── components/          # Reusable Vue components
-│   ├── ui/             # UI components (buttons, cards, etc.)
-│   └── forms/          # Form components
-├── views/              # Page components
-├── stores/             # Pinia store modules
-├── services/           # API and business logic
-├── composables/        # Vue composition functions
-├── utils/              # Utility functions
-├── types/              # TypeScript type definitions
-├── styles/             # SCSS stylesheets
-└── router/             # Vue Router configuration
-
-public/
-├── manifest.json       # PWA manifest
-└── offline.html        # Offline fallback page
-
-docs/                   # Documentation
-└── student-signup-feature.md
+tech-community/
+├── public/
+│   ├── data/              # Static JSON data files (default data source)
+│   │   ├── events.json
+│   │   ├── students.json
+│   │   └── README.md
+│   └── manifest.json      # PWA manifest
+├── src/
+│   ├── components/        # Reusable Vue components
+│   │   ├── ui/           # UI components (buttons, cards, etc.)
+│   │   └── forms/        # Form components
+│   ├── views/            # Page components
+│   ├── stores/           # Pinia store modules
+│   ├── services/         # Business logic and API
+│   │   ├── dataAdapter/  # Data access abstraction layer
+│   │   └── eventService/ # Event management services
+│   ├── config/           # Configuration files
+│   │   ├── community.config.ts  # Community branding
+│   │   └── database.config.ts   # Data source configuration
+│   ├── composables/      # Vue composition functions
+│   ├── utils/            # Utility functions
+│   ├── types/            # TypeScript type definitions
+│   ├── styles/           # SCSS stylesheets
+│   └── router/           # Vue Router configuration
+├── docs/                 # Comprehensive documentation
+│   ├── getting-started.md
+│   ├── architecture.md
+│   ├── database-setup.md
+│   ├── event-lifecycle.md
+│   └── building-admin-panel.md
+├── .env.example          # Environment variables template
+└── package.json
 ```
 
-## 🎯 Key Components
+## 🎯 Key Features Explained
 
 ### Event Management
-Events support multiple formats:
-- **Individual**: Single participant events
-- **Team**: Collaborative team-based events
-- **Competition**: Competitive events with winners
 
-Event lifecycle includes:
-- **Pending** → **Approved** → **Closed**
+Events support three formats with complete lifecycle management:
 
-### User Roles
-- **Students**: Can join events, submit projects, and earn XP
-- **Admins**: Full platform management capabilities
+#### 1. **Individual Events**
+- Single participants work independently
+- Personal project submissions
+- Individual winner selection
 
-### XP System
-Students earn experience points through:
-- Event participation
-- Project submissions
-- Team collaboration
-- Achievement unlocks
+#### 2. **Team Events**
+- Collaborative team-based activities
+- Automatic or manual team formation
+- Team submissions and winners
+
+#### 3. **MultiEvent (Multi-Phase)**
+- Complex events with multiple stages
+- Each phase can be Individual or Team based
+- Different criteria per phase
+- Progressive competitions (e.g., Ideation → Development → Presentation)
+
+**Event Lifecycle:**
+```
+Pending → Approved → Closed
+```
+
+- **Pending**: Awaits admin approval
+- **Approved**: Active, accepting participants
+- **Closed**: Completed, winner selection enabled
+
+### Data Flexibility
+
+The platform uses an **Adapter Pattern** for data access:
+
+**Static JSON Mode (Default)**
+- No database setup required
+- Perfect for development and testing
+- Data stored in `public/data/` JSON files
+- Changes persist in browser localStorage
+
+**Firebase Mode (Optional)**
+- Cloud-based data storage
+- Real-time synchronization
+- Built-in authentication
+- Production-ready
+
+**Custom Database (Extensible)**
+- Implement `IDataAdapter` interface
+- Connect to any backend
+- Use your preferred database
+
+### Customization
+
+Everything is configurable via `.env`:
+
+```env
+# Branding
+VITE_COMMUNITY_NAME="Your Tech Community"
+VITE_COMMUNITY_SHORT_NAME="YourTech"
+VITE_COMMUNITY_TAGLINE="Learn, Build, Grow"
+
+# Theme
+VITE_THEME_PRIMARY_COLOR="#0d6efd"
+VITE_THEME_SECONDARY_COLOR="#6c757d"
+
+# Features (enable/disable)
+VITE_ENABLE_XP_SYSTEM=true
+VITE_ENABLE_TEAMS=true
+VITE_ENABLE_PROJECTS=true
+
+# Data Source
+VITE_DATA_SOURCE=static  # or 'firebase'
+```
 
 ## 🔧 Development
 
 ### Available Scripts
 ```bash
-# Development server
-pnpm dev
+# Development server with hot reload
+npm run dev
 
 # Build for production
-pnpm build
+npm run build
 
-# Preview production build
-pnpm preview
+# Preview production build locally
+npm run preview
 
 # Type checking
-pnpm type-check
+npm run type-check
 
 # Type checking with watch mode
-pnpm type-check:watch
+npm run type-check:watch
 ```
 
-### Code Style
-- Use **TypeScript** for all new code
-- Follow **Vue 3 Composition API** patterns
-- Use **SCSS** for styling with Bootstrap variables
-- Implement **responsive design** principles
+### Development Tips
 
-### State Management
-The application uses Pinia with the following stores:
-- **appStore**: Global app state and configuration
-- **profileStore**: User authentication and profile data
-- **eventStore**: Event management and participation
-- **notificationStore**: In-app notifications
+1. **Use Static Mode First**: Start with `VITE_DATA_SOURCE=static` for rapid development
+2. **Hot Module Replacement**: Changes update instantly in dev mode
+3. **Vue DevTools**: Install browser extension for debugging
+4. **TypeScript**: Enable strict mode for better type safety
+5. **Data Adapters**: Business logic is database-agnostic
 
-## 📱 PWA Features
+### Adding Features
 
-The application is a Progressive Web App with:
-- **Offline Support**: Core functionality works without internet
-- **Installable**: Can be installed on devices like a native app
-- **Push Notifications**: Real-time event updates
-- **Background Sync**: Data synchronization when back online
+The modular architecture makes it easy to extend:
 
-## 🔐 Security
-
-### Authentication
-- Firebase Authentication with email/password
-- Role-based access control
-- Session management with automatic refresh
-
-### Data Protection
-- Firestore security rules enforce proper access
-- Input validation and sanitization
-- XSS protection with DOMPurify
+1. **New Data Source**: Implement `IDataAdapter` interface
+2. **Custom Event Types**: Extend event types in `src/types/event.ts`
+3. **UI Customization**: Modify components in `src/components/`
+4. **New Routes**: Add to `src/router/index.ts`
 
 ## 🚀 Deployment
 
-### Firebase Hosting
+### Static Hosting (Recommended for Static Mode)
+
+Works with any static hosting service:
+
+**Netlify:**
 ```bash
-# Build the project
-pnpm build
-
-# Deploy to Firebase
-firebase deploy --only hosting
-
-# Deploy specific site
-firebase deploy --only hosting:ksbtechs
+npm run build
+# Deploy dist/ folder via Netlify UI or CLI
+netlify deploy --prod --dir=dist
 ```
 
-### Environment-Specific Deployments
-- **Production**: `ksbtechs` site
-- **Beta**: `ksbtechbetas` site
+**Vercel:**
+```bash
+npm run build
+vercel --prod
+```
 
-## 📊 Monitoring
+**GitHub Pages:**
+```bash
+npm run build
+# Deploy dist/ folder to gh-pages branch
+```
 
-The application includes:
-- Error boundary handling
-- Performance monitoring
-- User analytics (privacy-compliant)
-- Real-time error reporting
+### Firebase Hosting (For Firebase Mode)
+
+```bash
+# Install Firebase CLI
+npm install -g firebase-tools
+
+# Login
+firebase login
+
+# Initialize hosting
+firebase init hosting
+
+# Build and deploy
+npm run build
+firebase deploy --only hosting
+```
+
+### Environment Variables
+
+For production, set environment variables in your hosting platform:
+- Netlify: Site settings → Environment variables
+- Vercel: Project settings → Environment variables
+- Firebase: Use `.env.production`
+
+## 🔐 Security
+
+### Static Mode
+- No authentication by default
+- All data publicly accessible
+- Suitable for demos and non-sensitive use cases
+- Can add custom auth layer
+
+### Firebase Mode
+- Built-in authentication
+- Firestore security rules
+- Role-based access control (admin vs. user)
+- Production-ready security
+
+**Important:** Always implement proper security rules in production!
 
 ## 🤝 Contributing
+
+We welcome contributions! Here's how to get started:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Run type checking (`pnpm type-check`)
+4. Run type checking (`npm run type-check`)
 5. Commit your changes (`git commit -m 'Add amazing feature'`)
 6. Push to the branch (`git push origin feature/amazing-feature`)
 7. Open a Pull Request
@@ -244,30 +346,48 @@ The application includes:
 - Write TypeScript interfaces for all data structures
 - Add proper error handling and loading states
 - Test on both desktop and mobile viewports
-- Follow the existing code patterns and naming conventions
+- Follow existing code patterns and naming conventions
 - Update documentation for new features
+- Keep changes minimal and focused
 
 ## 📝 License
 
-This project is proprietary software for KMCT School of Business.
+This project is open source and available under the [MIT License](LICENSE).
 
-## 🆘 Support
+## 🆘 Support & Community
 
-For technical support or questions:
-1. Check the documentation in the `/docs` folder
-2. Review existing issues in the repository
-3. Contact the development team
+- **Documentation**: Check the `docs/` folder for comprehensive guides
+- **Issues**: Report bugs on [GitHub Issues](https://github.com/yourusername/tech-community/issues)
+- **Discussions**: Ask questions on [GitHub Discussions](https://github.com/yourusername/tech-community/discussions)
+- **Examples**: See `public/data/README.md` for data structure examples
 
-## 🔄 Recent Updates
+## 🌟 Features Roadmap
 
-### Student Self-Signup Feature
-- Admin-generated signup links
-- Batch-based registration system
-- Approval workflow for new students
-- Duplicate prevention and validation
+- [ ] Email notifications
+- [ ] Advanced analytics dashboard
+- [ ] Custom event types
+- [ ] Integration with external APIs
+- [ ] Mobile native apps
+- [ ] Plugin system for extensions
 
-See `docs/student-signup-feature.md` for detailed documentation.
+## 💡 Use Cases
+
+This platform is perfect for:
+- **University tech clubs** - Manage events and hackathons
+- **Coding bootcamps** - Track student progress
+- **Tech communities** - Organize meetups and workshops
+- **Corporate teams** - Internal tech events
+- **Educational institutions** - Course projects and competitions
+
+## 🙏 Acknowledgments
+
+- Built with Vue 3, TypeScript, and Vite
+- UI powered by Bootstrap 5
+- Icons by Font Awesome
+- Inspired by the needs of tech communities worldwide
 
 ---
 
-**Made with ❤️ by the KSB Tech Community**
+**Ready to build your tech community? Get started now!** 🚀
+
+For questions or support, reach out via GitHub Issues or Discussions.
