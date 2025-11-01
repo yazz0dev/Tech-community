@@ -2,7 +2,7 @@
   <nav ref="navbarRef" class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-2 px-3 fixed-top">
     <div class="container-fluid">
       <router-link class="navbar-brand fw-bold text-primary" :to="brandLinkTarget">
-        <span>KSB Tech Community</span>
+        <span>{{ communityConfig.shortName || communityConfig.name }}</span>
       </router-link>
 
       <button
@@ -114,6 +114,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { Collapse } from 'bootstrap';
+import { communityConfig } from '@/config/community.config';
 
 const props = defineProps<{
   isAuthenticated: boolean;

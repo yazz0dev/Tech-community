@@ -1,8 +1,10 @@
 # Student Self-Signup Feature
 
+> **Note:** This feature documentation is specific to the student signup system. For general platform documentation, see the main [docs/](../) folder.
+
 ## Overview
 
-The Student Self-Signup feature allows students to register for the KSB Tech Community using admin-generated signup links. This creates a controlled registration process where students submit their information for admin approval before gaining access to the platform.
+The Student Self-Signup feature allows students to register for the Tech Community using admin-generated signup links. This creates a controlled registration process where students submit their information for admin approval before gaining access to the platform.
 
 ## How It Works
 
