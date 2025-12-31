@@ -229,7 +229,7 @@
 import { ref, computed, onMounted, reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import { collection, addDoc, Timestamp, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { getFirestoreInstance } from '@/firebase';
 import type { RegistrationFormData, signup } from '@/types/signup';
 import { validateSignupToken, isValidBatchYear, isBatchSignupActive } from '@/utils/signupUtils';
 
@@ -321,7 +321,7 @@ const checkExistingRegistration = async (email: string, studentId: string): Prom
     }
 
     // Check registrations in the main signup collection (not nested)
-    const signupRef = collection(db, 'signup');
+    const signupRef = collection(getFirestoreInstance(), 'signup');
     
     // Check email across all student registrations (non-batch config docs)
     const emailQuery = query(
@@ -410,7 +410,7 @@ const submitRegistration = async () => {
     };
 
     // Submit to Firestore using the flat collection structure
-    const signupRef = collection(db, 'signup');
+    const signupRef = collection(getFirestoreInstance(), 'signup');
     await addDoc(signupRef, registrationData);
 
     submissionSuccess.value = true;

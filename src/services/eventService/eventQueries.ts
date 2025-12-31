@@ -7,7 +7,7 @@ import {
   where, 
   orderBy
 } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { getFirestoreInstance } from '@/firebase';
 import { 
   type Event as EventData, 
   EventStatus
@@ -25,6 +25,7 @@ export async function fetchMyEventRequests(studentId: string): Promise<EventData
         return [];
     }
     try {
+        const db = getFirestoreInstance();
         const q = query(
             collection(db, EVENTS_COLLECTION),
             where('requestedBy', '==', studentId),
@@ -59,6 +60,7 @@ export async function fetchMyEventRequests(studentId: string): Promise<EventData
  */
 export async function fetchSingleEventForStudent(eventId: string, currentStudentId: string | null): Promise<EventData | null> {
     if (!eventId) throw new Error('Event ID required for fetching details.');
+    const db = getFirestoreInstance();
     const eventRef = doc(db, EVENTS_COLLECTION, eventId);
     try {
         const eventSnap = await getDoc(eventRef);
@@ -93,6 +95,7 @@ export async function fetchSingleEventForStudent(eventId: string, currentStudent
  */
 export async function fetchPubliclyViewableEvents(): Promise<EventData[]> {
   try {
+    const db = getFirestoreInstance();
     const q = query(
       collection(db, EVENTS_COLLECTION),
       where('status', 'in', [
@@ -129,6 +132,7 @@ export async function hasPendingRequest(studentId: string): Promise<boolean> {
     return false;
   }
   try {
+    const db = getFirestoreInstance();
     const q = query(
       collection(db, EVENTS_COLLECTION),
       where('requestedBy', '==', studentId),
@@ -154,6 +158,7 @@ export async function fetchStudentEvents(studentId: string): Promise<EventData[]
   }
   
   try {
+    const db = getFirestoreInstance();
     
     // Query for events where student is a participant - ordered by date descending
     const participantQuery = query(

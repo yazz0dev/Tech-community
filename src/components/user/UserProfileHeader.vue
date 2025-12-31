@@ -218,13 +218,6 @@ onMounted(() => {
   // LetterAvatar handles its own internal src and fallbacks.
   // If direct manipulation of the img inside LetterAvatar was needed, it would be more complex.
   // For now, this onMounted logic related to setting src directly can be removed.
-  // if (props.user && !props.user.photoURL && profileImageRef.value) {
-  //   profileImageRef.value.src = defaultAvatarUrl;
-  // }
-});
-</script>
-    profileImageRef.value.src = defaultAvatarUrl;
-  }
 });
 </script>
 

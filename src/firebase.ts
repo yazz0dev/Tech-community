@@ -38,5 +38,27 @@ export function isFirebaseEnabled(): boolean {
     return !!auth && !!db;
 }
 
+/**
+ * Get Firestore instance with type guard.
+ * Throws error if Firebase is not enabled.
+ */
+export function getFirestoreInstance(): Firestore {
+    if (!db) {
+        throw new Error('Firebase Firestore is not initialized. Set VITE_DATA_SOURCE=firebase and configure Firebase.');
+    }
+    return db;
+}
+
+/**
+ * Get Auth instance with type guard.
+ * Throws error if Firebase is not enabled.
+ */
+export function getAuthInstance(): Auth {
+    if (!auth) {
+        throw new Error('Firebase Auth is not initialized. Set VITE_DATA_SOURCE=firebase and configure Firebase.');
+    }
+    return auth;
+}
+
 // Export with undefined types - consumers must check isFirebaseEnabled()
 export { db, auth, app };

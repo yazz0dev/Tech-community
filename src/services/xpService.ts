@@ -1,5 +1,5 @@
 import { doc, writeBatch, increment, Timestamp, type WriteBatch, arrayUnion } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { getFirestoreInstance } from '@/firebase';
 import type { XPData, XpFirestoreFieldKey, XPPointHistoryItem, XpCalculationRoleKey } from '@/types/xp';
 
 // Helper to get current Firestore Timestamp, similar to createTimestamp in stores
@@ -30,7 +30,7 @@ export const applyXpAwardsBatch = (
   const userIds = Object.keys(xpChangesMap);
   if (userIds.length === 0) {
     console.info('No XP changes to apply, returning an empty batch.');
-    return writeBatch(db);
+    return writeBatch(getFirestoreInstance());
   }
   
   if (userIds.length >= 499) {
@@ -45,7 +45,7 @@ export const applyXpAwardsBatch = (
     throw new Error('Event ID or Event Name is missing, cannot reliably award XP with history.');
   }
 
-  const batch = writeBatch(db);
+  const batch = writeBatch(getFirestoreInstance());
 
   for (const userId of userIds) {
     const xpIncrements = xpChangesMap[userId];
@@ -54,7 +54,7 @@ export const applyXpAwardsBatch = (
       continue;
     }
     
-    const xpDocRef = doc(db, 'xp', userId);
+    const xpDocRef = doc(getFirestoreInstance(), 'xp', userId);
     const updatePayload: Record<string, any> = { lastUpdatedAt: now() };
     const historyItems: XPPointHistoryItem[] = [];
     let userHasUpdates = false;

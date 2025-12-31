@@ -5,7 +5,7 @@ import App from "@/App.vue";
 import router from "./router";
 import AuthGuard from "@/components/AuthGuard.vue";
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/firebase';
+import { isFirebaseEnabled, getAuthInstance } from '@/firebase';
 import { initializeAuth } from '@/services/authService'; // Import the initialization function
 import { MotionPlugin } from '@vueuse/motion';
 
@@ -21,7 +21,7 @@ import "./styles/main.scss";
 import { registerSW } from 'virtual:pwa-register'
 
 // --- Initialize App ---
-async function initializeApp() {
+async function initializeApplication() {
   try {
     // Initialize Firebase Auth persistence
     await initializeAuth();
@@ -64,27 +64,32 @@ async function initializeApp() {
     // Make updateSW available globally
     window.__updateSW = updateSW;
 
-    // Set up a single, definitive auth state listener
-    onAuthStateChanged(auth, async (user) => {
-      try {
-        // Delegate auth state handling directly to the profile store
-        await profileStore.handleAuthStateChange(user);
-      } catch (error) {
-        console.error('Critical error during auth state change handling:', error);
-        // Optionally, show a global error message to the user
-      } finally {
-        // Ensure the app knows the initial auth check is complete.
+    // Set up a single, definitive auth state listener (only if Firebase is enabled)
+    if (isFirebaseEnabled()) {
+      onAuthStateChanged(getAuthInstance(), async (user) => {
+        try {
+          // Delegate auth state handling directly to the profile store
+          await profileStore.handleAuthStateChange(user);
+        } catch (error) {
+          console.error('Critical error during auth state change handling:', error);
+          // Optionally, show a global error message to the user
+        } finally {
+          // Ensure the app knows the initial auth check is complete.
+          if (!appStore.hasFetchedInitialAuth) {
+            appStore.setHasFetchedInitialAuth(true);
+          }
+        }
+      }, (error) => {
+        console.error('Error in onAuthStateChanged listener:', error);
+        // Even on error, we mark the initial auth fetch as complete to unblock the UI
         if (!appStore.hasFetchedInitialAuth) {
           appStore.setHasFetchedInitialAuth(true);
         }
-      }
-    }, (error) => {
-      console.error('Error in onAuthStateChanged listener:', error);
-      // Even on error, we mark the initial auth fetch as complete to unblock the UI
-      if (!appStore.hasFetchedInitialAuth) {
-        appStore.setHasFetchedInitialAuth(true);
-      }
-    });
+      });
+    } else {
+      // Firebase not enabled, mark initial auth as complete immediately
+      appStore.setHasFetchedInitialAuth(true);
+    }
 
     // Mount the app. The UI will be guarded by AuthGuard or similar
     // components which react to the stores' state.
@@ -109,5 +114,5 @@ async function initializeApp() {
 }
 
 // Start the application
-initializeApp();
+initializeApplication();
 

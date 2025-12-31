@@ -396,18 +396,54 @@ VITE_DATA_SOURCE=custom
 VITE_API_BASE_URL=https://api.yourdomain.com
 ```
 
+## Popular Database Templates
+
+The platform includes templates and documentation for integrating popular databases. Check the `src/services/dataAdapter/` directory for example implementations.
+
+### Supabase (PostgreSQL)
+
+Supabase is an open-source Firebase alternative with PostgreSQL.
+
+```env
+VITE_DATA_SOURCE=supabase
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### MongoDB
+
+For MongoDB integration, you'll need a backend API since MongoDB doesn't support direct browser connections.
+
+```env
+VITE_DATA_SOURCE=rest
+VITE_REST_API_URL=https://your-mongodb-api.com/api
+```
+
+### REST API
+
+For any custom backend (PostgreSQL, MySQL, etc.):
+
+```env
+VITE_DATA_SOURCE=rest
+VITE_REST_API_URL=https://api.yourdomain.com/v1
+VITE_REST_API_AUTH_HEADER=Bearer your-token
+```
+
+See `src/services/dataAdapter/RestApiDataAdapter.example.ts` for a complete REST API adapter template.
+
 ## Comparison
 
-| Feature | Static JSON | Firebase | Custom DB |
-|---------|------------|----------|-----------|
-| Setup Time | < 1 min | 30 min | Varies |
-| Cost | Free | Free tier, then pay | Varies |
-| Authentication | No | Yes | Depends |
-| Real-time Updates | No | Yes | Depends |
-| Scalability | Limited | High | Depends |
-| Offline Support | Yes | Partial | Depends |
-| File Storage | No | Yes | Depends |
-| Learning Curve | None | Medium | Varies |
+| Feature | Static JSON | Firebase | Supabase | Custom REST |
+|---------|------------|----------|----------|-------------|
+| Setup Time | < 1 min | 30 min | 20 min | Varies |
+| Cost | Free | Free tier | Free tier | Varies |
+| Authentication | No | Yes | Yes | Depends |
+| Real-time Updates | No | Yes | Yes | WebSocket |
+| Scalability | Limited | High | High | Depends |
+| Offline Support | Yes | Partial | Partial | Depends |
+| File Storage | No | Yes | Yes | Depends |
+| Learning Curve | None | Medium | Low | Varies |
+| Open Source | N/A | No | Yes | N/A |
 
 ## Best Practices
 

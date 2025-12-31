@@ -112,18 +112,20 @@ const initialsBackgroundColor = computed(() => {
 const getInitials = (name: string): string => {
   if (!name) return '?';
   const nameParts = name.trim().split(/\s+/);
-  if (nameParts.length === 1 && nameParts[0].length > 0) {
-    return nameParts[0][0].toUpperCase();
+  const firstPart = nameParts[0];
+  if (nameParts.length === 1 && firstPart && firstPart.length > 0) {
+    return firstPart[0]?.toUpperCase() ?? '?';
   }
   if (nameParts.length > 1) {
-    const firstInitial = nameParts[0][0];
-    const lastInitial = nameParts[nameParts.length - 1][0];
+    const lastPart = nameParts[nameParts.length - 1];
+    const firstInitial = firstPart?.[0];
+    const lastInitial = lastPart?.[0];
     if (firstInitial && lastInitial) {
       return (firstInitial + lastInitial).toUpperCase();
     }
     if (firstInitial) return firstInitial.toUpperCase();
   }
-  return name[0]?.toUpperCase() || '?';
+  return name[0]?.toUpperCase() ?? '?';
 };
 
 const avatarStyle = computed(() => ({

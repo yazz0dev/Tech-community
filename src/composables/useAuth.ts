@@ -2,7 +2,7 @@ import { computed } from 'vue';
 import { signOut } from 'firebase/auth';
 import { useProfileStore } from '@/stores/profileStore';
 import { useAppStore } from '@/stores/appStore';
-import { auth as firebaseAuthInstance } from '@/firebase';
+import { isFirebaseEnabled, getAuthInstance } from '@/firebase';
 
 export function useAuth() {
   const profileStore = useProfileStore();
@@ -31,8 +31,12 @@ export function useAuth() {
    * which handles both Firebase sign-out and local session cleanup.
    */
   const logout = async (): Promise<void> => {
+    if (!isFirebaseEnabled()) {
+      console.warn('Firebase Auth is not enabled. Cannot sign out.');
+      return;
+    }
     try {
-      await signOut(firebaseAuthInstance);
+      await signOut(getAuthInstance());
       // The onAuthStateChanged listener in main.ts will trigger the profileStore.clearStudentSession.
       // No need to call it directly here.
     } catch (error) {

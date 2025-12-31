@@ -6,7 +6,7 @@ import {
   serverTimestamp,
   setDoc,
 } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { getFirestoreInstance } from '@/firebase';
 import { DateTime } from 'luxon';
 import {
   type EventDetails,
@@ -52,13 +52,14 @@ export const createEventRequest = async (
   }
 
   try {
+    const db = getFirestoreInstance();
     const newEventRef = doc(collection(db, EVENTS_COLLECTION));
     const newEventId = newEventRef.id;
     
     // Map application data to a clean Firestore-ready object.
     const firestoreData = mapEventDataToFirestore(formData);
 
-    const dataToSubmit: Record<string, any> = {
+    const dataToSubmit: Record<string, unknown> = {
       ...firestoreData,
       requestedBy: studentId,
       status: EventStatus.Pending,
@@ -80,9 +81,9 @@ export const createEventRequest = async (
     };
 
     // Ensure organizers array always includes the requester.
-    const organizers = new Set((dataToSubmit.details as EventDetails).organizers || []);
+    const organizers = new Set((dataToSubmit['details'] as EventDetails).organizers || []);
     organizers.add(studentId);
-    (dataToSubmit.details as EventDetails).organizers = Array.from(organizers);
+    (dataToSubmit['details'] as EventDetails).organizers = Array.from(organizers);
 
     await setDoc(newEventRef, dataToSubmit);
     return newEventId;
@@ -108,6 +109,7 @@ export const updateEventRequestInService = async (
   if (!eventId) throw new Error('Event ID is required for updates.');
   if (!studentId) throw new Error('Student ID is required for permission checks.');
 
+  const db = getFirestoreInstance();
   const eventRef = doc(db, EVENTS_COLLECTION, eventId);
   try {
     const eventSnap = await getDoc(eventRef);
@@ -144,22 +146,22 @@ export const updateEventRequestInService = async (
 
     // Map form data to a clean Firestore object.
     const mappedUpdates = mapEventDataToFirestore(formData);
-    const updatesToApply: Record<string, any> = { ...mappedUpdates };
+    const updatesToApply: Record<string, unknown> = { ...mappedUpdates };
     
     // Ensure protected fields are not overwritten from the form.
-    delete updatesToApply.status;
-    delete updatesToApply.requestedBy;
-    delete updatesToApply.lifecycleTimestamps;
-    delete updatesToApply.winners;
-    delete updatesToApply.manuallySelectedBy;
+    delete updatesToApply['status'];
+    delete updatesToApply['requestedBy'];
+    delete updatesToApply['lifecycleTimestamps'];
+    delete updatesToApply['winners'];
+    delete updatesToApply['manuallySelectedBy'];
 
 
     // Ensure organizers array always includes the editor.
-    const organizers = new Set((updatesToApply.details as EventDetails).organizers || []);
+    const organizers = new Set((updatesToApply['details'] as EventDetails).organizers || []);
     organizers.add(studentId);
-    (updatesToApply.details as EventDetails).organizers = Array.from(organizers);
+    (updatesToApply['details'] as EventDetails).organizers = Array.from(organizers);
 
-    await updateDoc(eventRef, updatesToApply);
+    await updateDoc(eventRef, updatesToApply as unknown as Record<string, any>);
 
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error during event update.';

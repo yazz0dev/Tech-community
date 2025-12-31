@@ -141,7 +141,7 @@ import {
   confirmPasswordReset,
   type AuthError
 } from 'firebase/auth';
-import { auth } from '@/firebase';
+import { getAuthInstance } from '@/firebase';
 
 const route = useRoute();
 const router = useRouter();
@@ -173,7 +173,7 @@ onMounted(() => {
       isError.value = false;
       try {
         // Verify the password reset code.
-        await verifyPasswordResetCode(auth, oobCode.value);
+        await verifyPasswordResetCode(getAuthInstance(), oobCode.value);
         // Code is valid, show the reset password form.
         viewState.value = 'reset';
         message.value = ''; // Clear verification message
@@ -214,7 +214,7 @@ const handleSendResetEmail = async () => {
   };
 
   try {
-    await firebaseSendPasswordResetEmail(auth, email.value.trim(), actionCodeSettings);
+    await firebaseSendPasswordResetEmail(getAuthInstance(), email.value.trim(), actionCodeSettings);
     message.value = 'Password reset email sent. Check your inbox (and spam folder).';
     isError.value = false;
     // Keep viewState as 'request', show success message
@@ -268,7 +268,7 @@ const handleResetPassword = async () => {
 
   isLoading.value = true;
   try {
-    await confirmPasswordReset(auth, oobCode.value, newPassword.value);
+    await confirmPasswordReset(getAuthInstance(), oobCode.value, newPassword.value);
     message.value = 'Password reset successfully!';
     isError.value = false;
     viewState.value = 'success';

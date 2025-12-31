@@ -4,7 +4,7 @@ import {
   updateDoc,
   serverTimestamp
 } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { getFirestoreInstance } from '@/firebase';
 import { 
   type Event as EventData, // Alias Event to EventData
   EventFormat,
@@ -36,7 +36,7 @@ export async function autoGenerateEventTeamsInFirestore(
   if (maxMembersPerTeam > MAX_TEAM_MEMBERS) maxMembersPerTeam = MAX_TEAM_MEMBERS;
   if (minMembersPerTeam > maxMembersPerTeam) throw new Error("Maximum members per team cannot be less than minimum.");
 
-  const eventRef = doc(db, EVENTS_COLLECTION, eventId);
+  const eventRef = doc(getFirestoreInstance(), EVENTS_COLLECTION, eventId);
   try {
     const eventSnapshot = await getDoc(eventRef);
     if (!eventSnapshot.exists()) throw new Error("Event not found.");

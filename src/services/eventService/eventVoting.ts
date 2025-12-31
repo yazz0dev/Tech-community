@@ -5,7 +5,7 @@ import {
   runTransaction,
   type Transaction
 } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { getFirestoreInstance } from '@/firebase';
 import { 
   EventStatus, 
   EventFormat,
@@ -31,9 +31,9 @@ export async function submitTeamCriteriaVoteInFirestore(
         throw new Error("Criteria votes are required and cannot be empty.");
     }
 
-    const eventRef = doc(db, EVENTS_COLLECTION, eventId);
+    const eventRef = doc(getFirestoreInstance(), EVENTS_COLLECTION, eventId);
     try {
-        await runTransaction(db, async (transaction: Transaction) => {
+        await runTransaction(getFirestoreInstance(), async (transaction: Transaction) => {
             const eventSnap = await transaction.get(eventRef);
             if (!eventSnap.exists()) throw new Error('Event not found in transaction.');
             
@@ -119,9 +119,9 @@ export async function submitIndividualWinnerVoteInFirestore(
         throw new Error("Criteria votes are required and cannot be empty.");
     }
 
-    const eventRef = doc(db, EVENTS_COLLECTION, eventId);
+    const eventRef = doc(getFirestoreInstance(), EVENTS_COLLECTION, eventId);
     try {
-        await runTransaction(db, async (transaction: Transaction) => {
+        await runTransaction(getFirestoreInstance(), async (transaction: Transaction) => {
             const eventSnap = await transaction.get(eventRef);
             if (!eventSnap.exists()) throw new Error('Event not found in transaction.');
             
@@ -200,10 +200,10 @@ export async function submitOrganizationRatingInFirestore(payload: {
     if (!eventId || !userId) throw new Error("Event ID and User ID are required.");
     if (score < 1 || score > 5) throw new Error("Rating score must be between 1 and 5.");
 
-    const eventRef = doc(db, EVENTS_COLLECTION, eventId);
+    const eventRef = doc(getFirestoreInstance(), EVENTS_COLLECTION, eventId);
 
     try {
-        await runTransaction(db, async (transaction) => {
+        await runTransaction(getFirestoreInstance(), async (transaction) => {
             const eventSnap = await transaction.get(eventRef);
             if (!eventSnap.exists()) throw new Error("Event not found.");
             
@@ -252,9 +252,9 @@ export async function toggleVotingStatusInFirestore(eventId: string, open: boole
     if (!eventId) throw new Error("Event ID is required.");
     if (!currentUser?.uid) throw new Error("User performing action is required for permission check.");
 
-    const eventRef = doc(db, EVENTS_COLLECTION, eventId);
+    const eventRef = doc(getFirestoreInstance(), EVENTS_COLLECTION, eventId);
     try {
-        await runTransaction(db, async (transaction: Transaction) => {
+        await runTransaction(getFirestoreInstance(), async (transaction: Transaction) => {
             const eventSnap = await transaction.get(eventRef);
             if (!eventSnap.exists()) throw new Error("Event not found.");
             const eventData = mapFirestoreToEventData(eventSnap.id, eventSnap.data());
@@ -290,7 +290,7 @@ export async function toggleVotingStatusInFirestore(eventId: string, open: boole
 export async function calculateWinnersFromVotes(eventId: string): Promise<Record<string, string[]>> {
     if (!eventId) throw new Error("Event ID is required.");
 
-    const eventRef = doc(db, EVENTS_COLLECTION, eventId);
+    const eventRef = doc(getFirestoreInstance(), EVENTS_COLLECTION, eventId);
     const eventSnap = await getDoc(eventRef);
     if (!eventSnap.exists()) throw new Error("Event not found for calculating winners.");
 
@@ -375,9 +375,9 @@ export async function submitManualWinnerSelectionInFirestore(
     if (!eventId || !userId) throw new Error("Event ID and User ID are required.");
     if (!selections || isEmpty(selections)) throw new Error("Winner selections are required.");
 
-    const eventRef = doc(db, EVENTS_COLLECTION, eventId);
+    const eventRef = doc(getFirestoreInstance(), EVENTS_COLLECTION, eventId);
     try {
-        await runTransaction(db, async (transaction: Transaction) => {
+        await runTransaction(getFirestoreInstance(), async (transaction: Transaction) => {
             const eventSnap = await transaction.get(eventRef);
             if (!eventSnap.exists()) throw new Error('Event not found.');
             const eventData = mapFirestoreToEventData(eventSnap.id, eventSnap.data());
@@ -430,11 +430,11 @@ export async function finalizeWinnersInFirestore(
     if (!eventId) throw new Error("Event ID required.");
     if (!currentUser?.uid) throw new Error("User performing action is required for permission check.");
 
-    const eventRef = doc(db, EVENTS_COLLECTION, eventId);
+    const eventRef = doc(getFirestoreInstance(), EVENTS_COLLECTION, eventId);
     let finalWinners: Record<string, string | string[]> = {};
 
     try {
-        await runTransaction(db, async (transaction: Transaction) => {
+        await runTransaction(getFirestoreInstance(), async (transaction: Transaction) => {
             const eventSnap = await transaction.get(eventRef);
             if (!eventSnap.exists()) throw new Error("Event not found.");
             const eventData = mapFirestoreToEventData(eventSnap.id, eventSnap.data());
