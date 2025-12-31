@@ -1,8 +1,18 @@
 import { doc, getDoc, serverTimestamp, Timestamp, updateDoc, increment as firebaseIncrement } from 'firebase/firestore'; // Removed unused collection, query, where, getDocs. Added Timestamp, updateDoc, firebaseIncrement
-import { db } from '@/firebase';
+import { getFirestoreInstance, isFirebaseEnabled } from '@/firebase';
 import { SIGNUP_LINKS_COLLECTION, SIGNUP_COLLECTION, STUDENTS_COLLECTION } from './constants';
 import type { RegistrationFormData, BatchSignupConfig, signup } from '@/types/signup';
 import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
+
+/**
+ * Helper function to get Firestore instance with error handling
+ */
+function getDb() {
+  if (!isFirebaseEnabled()) {
+    throw new Error('Firebase is not enabled. Signup functionality requires Firebase.');
+  }
+  return getFirestoreInstance();
+}
 
 /**
  * Validate batch year
@@ -58,7 +68,7 @@ export async function validateSignupToken(token: string): Promise<{
   }
 
   try {
-    const linkDocRef = doc(db, SIGNUP_LINKS_COLLECTION, token);
+    const linkDocRef = doc(getDb(), SIGNUP_LINKS_COLLECTION, token);
     const linkDoc = await getDoc(linkDocRef);
 
     if (!linkDoc.exists()) { // Check if the document exists
@@ -97,7 +107,7 @@ export async function validateSignupToken(token: string): Promise<{
  */
 export async function isBatchSignupActive(batchYear: number): Promise<boolean> {
   try {
-    const batchConfigDocRef = doc(db, SIGNUP_COLLECTION, String(batchYear));
+    const batchConfigDocRef = doc(getDb(), SIGNUP_COLLECTION, String(batchYear));
     const batchConfigSnap = await getDoc(batchConfigDocRef); 
     
     if (!batchConfigSnap.exists()) { 
@@ -118,7 +128,7 @@ export async function isBatchSignupActive(batchYear: number): Promise<boolean> {
  */
 export async function getBatchSignupConfig(batchYear: number): Promise<(BatchSignupConfig & { id: string }) | null> {
   try {
-    const batchDocRef = doc(db, SIGNUP_COLLECTION, batchYear.toString()); // Use SIGNUP_COLLECTION constant
+    const batchDocRef = doc(getDb(), SIGNUP_COLLECTION, batchYear.toString()); // Use SIGNUP_COLLECTION constant
     const batchDoc = await getDoc(batchDocRef);
     
     if (!batchDoc.exists()) {
@@ -168,7 +178,7 @@ export async function incrementBatchRegistrationCount(batchYear: number): Promis
     return;
   }
   try {
-    const batchConfigDocRef = doc(db, SIGNUP_COLLECTION, String(batchYear));
+    const batchConfigDocRef = doc(getDb(), SIGNUP_COLLECTION, String(batchYear));
     // Ensure the document exists before trying to increment
     const docSnap = await getDoc(batchConfigDocRef);
     if (!docSnap.exists()) {
@@ -194,7 +204,7 @@ export async function incrementBatchRegistrationCount(batchYear: number): Promis
 
 export async function checkExistingRegistration(email: string): Promise<{ registered: boolean; studentId?: string }> {
   try {
-    const studentsCollection = collection(db, STUDENTS_COLLECTION);
+    const studentsCollection = collection(getDb(), STUDENTS_COLLECTION);
     const q = query(studentsCollection, where('email', '==', email));
     const querySnapshot = await getDocs(q);
 
@@ -226,7 +236,7 @@ export async function submitRegistration(
     },
   };
 
-  const docRef = await addDoc(collection(db, SIGNUP_COLLECTION, String(activeConfig.batchYear), 'signup'), {
+  const docRef = await addDoc(collection(getDb(), SIGNUP_COLLECTION, String(activeConfig.batchYear), 'signup'), {
     ...newRegistration,
     status: 'pending_approval',
     submittedAt: Timestamp.now(),

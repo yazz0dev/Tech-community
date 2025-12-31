@@ -5,7 +5,7 @@ import {
   where,
   Timestamp
 } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { getFirestoreInstance } from '@/firebase';
 import { DateTime } from 'luxon';
 import { 
   type Event, 
@@ -24,7 +24,7 @@ export async function checkExistingPendingRequest(studentId: string): Promise<bo
     if (!studentId) return false;
     try {
         const q = query(
-            collection(db, EVENTS_COLLECTION),
+            collection(getFirestoreInstance(), EVENTS_COLLECTION),
             where('requestedBy', '==', studentId),
             where('status', '==', EventStatus.Pending)
         );
@@ -80,7 +80,7 @@ export async function checkDateConflictForRequest(
     }
 
     const q = query(
-        collection(db, EVENTS_COLLECTION),
+        collection(getFirestoreInstance(), EVENTS_COLLECTION),
         where('status', 'in', [EventStatus.Approved, EventStatus.Approved, EventStatus.Approved])
     );
 

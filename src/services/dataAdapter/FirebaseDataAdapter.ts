@@ -14,19 +14,17 @@ import {
   deleteDoc,
   query,
   where,
-  Firestore
+  Firestore,
+  type PartialWithFieldValue
 } from 'firebase/firestore';
+import { getFirestoreInstance } from '@/firebase';
 
 export class FirebaseDataAdapter implements IDataAdapter {
   private db: Firestore;
 
   constructor() {
-    // Lazy load Firebase to avoid initialization errors in static mode
-    const firebase = require('@/firebase');
-    if (!firebase.db) {
-      throw new Error('Firebase is not initialized. Set VITE_DATA_SOURCE=firebase and configure Firebase.');
-    }
-    this.db = firebase.db;
+    // Use the type-safe helper to get the Firestore instance
+    this.db = getFirestoreInstance();
   }
 
   async getEvents(): Promise<Event[]> {
@@ -50,7 +48,8 @@ export class FirebaseDataAdapter implements IDataAdapter {
 
   async updateEvent(id: string, updates: Partial<Event>): Promise<void> {
     const docRef = doc(this.db, 'events', id);
-    await updateDoc(docRef, updates as any);
+    // Cast to PartialWithFieldValue for Firestore compatibility
+    await updateDoc(docRef, updates as PartialWithFieldValue<Event>);
   }
 
   async deleteEvent(id: string): Promise<void> {
@@ -60,13 +59,13 @@ export class FirebaseDataAdapter implements IDataAdapter {
 
   async getStudents(): Promise<Student[]> {
     const snapshot = await getDocs(collection(this.db, 'students'));
-    return snapshot.docs.map(doc => {
-      const data = doc.data();
+    return snapshot.docs.map(docSnap => {
+      const data = docSnap.data();
       return { 
-        uid: doc.id, 
-        email: data.email || null,
-        name: data.name || null,
-        ...data 
+        ...data,
+        uid: docSnap.id, 
+        email: data['email'] ?? null,
+        name: data['name'] ?? null,
       } as Student;
     });
   }
@@ -79,30 +78,31 @@ export class FirebaseDataAdapter implements IDataAdapter {
     }
     const data = docSnap.data();
     return { 
+      ...data,
       uid: docSnap.id, 
-      email: data.email || null,
-      name: data.name || null,
-      ...data 
+      email: data['email'] ?? null,
+      name: data['name'] ?? null,
     } as Student;
   }
 
   async createStudent(student: Omit<Student, 'uid'>): Promise<Student> {
     const docRef = await addDoc(collection(this.db, 'students'), student);
     return { 
+      ...student,
       uid: docRef.id, 
-      email: null,
-      name: null,
-      ...student 
+      email: (student as { email?: string | null }).email ?? null,
+      name: (student as { name?: string | null }).name ?? null,
     } as Student;
   }
 
   async updateStudent(id: string, updates: Partial<Student>): Promise<void> {
     const docRef = doc(this.db, 'students', id);
-    await updateDoc(docRef, updates as any);
+    // Cast to PartialWithFieldValue for Firestore compatibility
+    await updateDoc(docRef, updates as PartialWithFieldValue<Student>);
   }
 
-  async queryEvents(filters: Record<string, any>): Promise<Event[]> {
-    let q = collection(this.db, 'events');
+  async queryEvents(filters: Record<string, unknown>): Promise<Event[]> {
+    const q = collection(this.db, 'events');
     const constraints = Object.entries(filters).map(([key, value]) => {
       if (Array.isArray(value)) {
         return where(key, 'in', value);
@@ -110,13 +110,13 @@ export class FirebaseDataAdapter implements IDataAdapter {
       return where(key, '==', value);
     });
     
-    const queryRef = query(q as any, ...constraints);
+    const queryRef = query(q, ...constraints);
     const snapshot = await getDocs(queryRef);
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Event));
   }
 
-  async queryStudents(filters: Record<string, any>): Promise<Student[]> {
-    let q = collection(this.db, 'students');
+  async queryStudents(filters: Record<string, unknown>): Promise<Student[]> {
+    const q = collection(this.db, 'students');
     const constraints = Object.entries(filters).map(([key, value]) => {
       if (Array.isArray(value)) {
         return where(key, 'in', value);
@@ -124,14 +124,14 @@ export class FirebaseDataAdapter implements IDataAdapter {
       return where(key, '==', value);
     });
     
-    const queryRef = query(q as any, ...constraints);
+    const queryRef = query(q, ...constraints);
     const snapshot = await getDocs(queryRef);
     return snapshot.docs.map(doc => {
       const data = doc.data();
       return { 
         uid: doc.id, 
-        email: data.email || null,
-        name: data.name || null,
+        email: data['email'] || null,
+        name: data['name'] || null,
         ...data 
       } as Student;
     });

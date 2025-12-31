@@ -10,7 +10,7 @@ import {
   updateDoc, 
   Timestamp
 } from 'firebase/firestore';
-import { auth, db } from '@/firebase';
+import { getFirestoreInstance, getAuthInstance, isFirebaseEnabled } from '@/firebase';
 import type { EnrichedStudentData, UserData } from '@/types/student';
 import type { XPData } from '@/types/xp';
 import { getDefaultXPData } from '@/types/xp';
@@ -26,8 +26,8 @@ const now = () => Timestamp.now();
  */
 export const fetchStudentData = async (uid: string): Promise<EnrichedStudentData | null> => {
   try {
-    const studentDocRef = doc(db, STUDENTS_COLLECTION, uid);
-    const xpDocRef = doc(db, XP_COLLECTION, uid);
+    const studentDocRef = doc(getFirestoreInstance(), STUDENTS_COLLECTION, uid);
+    const xpDocRef = doc(getFirestoreInstance(), XP_COLLECTION, uid);
 
     const [studentSnap, xpSnap] = await Promise.all([
       getDoc(studentDocRef),
@@ -77,6 +77,10 @@ export const updateStudentProfile = async (
   try {
     // Ensure the current user is authenticated
     // Using centralized auth instance from firebase.ts
+    if (!isFirebaseEnabled()) {
+      throw new Error('Firebase is not enabled');
+    }
+    const auth = getAuthInstance();
     if (!auth.currentUser) {
       throw new Error('You must be authenticated to update your profile');
     }
@@ -90,12 +94,12 @@ export const updateStudentProfile = async (
       throw new Error('You do not have permission to update this profile. Please try logging out and back in.');
     }
 
-    const studentRef = doc(db, STUDENTS_COLLECTION, uid);
+    const studentRef = doc(getFirestoreInstance(), STUDENTS_COLLECTION, uid);
     const dataToUpdate = { ...updates, lastUpdatedAt: now() };
     await updateDoc(studentRef, dataToUpdate);
-  } catch (err: any) {
+  } catch (err: unknown) {
     // More specific error handling for permission issues
-    if (err.code === 'permission-denied') {
+    if (err && typeof err === 'object' && 'code' in err && err.code === 'permission-denied') {
       throw new Error('You do not have permission to update this profile. Please try logging out and back in.');
     } else {
       console.error("Error updating student profile:", err);
@@ -122,7 +126,7 @@ export const fetchUserNamesBatch = async (uids: string[]): Promise<Record<string
       const batchIds = uniqueUids.slice(i, i + 30);
       if (batchIds.length === 0) continue;
       
-      const usersRef = collection(db, STUDENTS_COLLECTION);
+      const usersRef = collection(getFirestoreInstance(), STUDENTS_COLLECTION);
       const q = query(usersRef, where(documentId(), 'in', batchIds));
       const snapshot = await getDocs(q);
       
@@ -152,7 +156,7 @@ export const fetchUserNamesBatch = async (uids: string[]): Promise<Record<string
  */   
 export const fetchAllStudentProfiles = async (): Promise<UserData[]> => {
   try {
-    const studentsCollectionRef = collection(db, STUDENTS_COLLECTION);
+    const studentsCollectionRef = collection(getFirestoreInstance(), STUDENTS_COLLECTION);
     const q = query(studentsCollectionRef, orderBy('name', 'asc'));
     const querySnapshot = await getDocs(q);
     
@@ -174,7 +178,7 @@ export const fetchAllStudentProfiles = async (): Promise<UserData[]> => {
  */
 export const fetchLeaderboardData = async (): Promise<EnrichedStudentData[]> => {
   try {
-    const studentsCollectionRef = collection(db, STUDENTS_COLLECTION);
+    const studentsCollectionRef = collection(getFirestoreInstance(), STUDENTS_COLLECTION);
     const studentsSnapshot = await getDocs(studentsCollectionRef);
     
     if (studentsSnapshot.empty) {
@@ -183,7 +187,7 @@ export const fetchLeaderboardData = async (): Promise<EnrichedStudentData[]> => 
 
     const leaderboardUsersPromises = studentsSnapshot.docs.map(async (studentDoc) => {
       const studentData = { uid: studentDoc.id, ...studentDoc.data() } as UserData;
-      const xpDocRef = doc(db, XP_COLLECTION, studentDoc.id);
+      const xpDocRef = doc(getFirestoreInstance(), XP_COLLECTION, studentDoc.id);
       const xpSnap = await getDoc(xpDocRef);
       const xpData = xpSnap.exists()
         ? ({ uid: xpSnap.id, ...xpSnap.data() } as XPData)

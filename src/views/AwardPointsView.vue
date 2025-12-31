@@ -31,7 +31,7 @@
                   type="number"
                   class="form-control"
                   :id="`points-${participant.uid}-${index}`"
-                  v-model.number="awards[participant.uid][index]"
+                  v-model.number="awards[participant.uid]![index]"
                   min="0"
                   :max="criterion.points"
                 />
@@ -100,12 +100,13 @@ export default defineComponent({
           // Initialize awards object
           if (event.value.criteria) {
             participants.value.forEach(p => {
-              awards.value[p.uid] = {};
+              const userAwards: Record<string, number> = {};
               if (event.value?.criteria) {
                 event.value.criteria.forEach((_, index) => {
-                  awards.value[p.uid][index] = 0;
+                  userAwards[index] = 0;
                 });
               }
+              awards.value[p.uid] = userAwards;
             });
           }
         }

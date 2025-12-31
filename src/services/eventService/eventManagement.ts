@@ -4,7 +4,7 @@ import {
   updateDoc,
   deleteDoc,
   serverTimestamp} from 'firebase/firestore';
-import { db } from '@/firebase';
+import { getFirestoreInstance } from '@/firebase';
 import { 
   type Event, 
   EventStatus, 
@@ -35,6 +35,7 @@ export async function updateEventStatusInFirestore(
     if (!eventId) throw new Error('Event ID required for status update.');
     if (!currentUser?.uid) throw new Error('User not authenticated for status update.');
 
+    const db = getFirestoreInstance();
     const eventRef = doc(db, EVENTS_COLLECTION, eventId);
     try {
         const eventSnap = await getDoc(eventRef);
@@ -42,17 +43,17 @@ export async function updateEventStatusInFirestore(
         const currentEvent = mapFirestoreToEventData(eventSnap.id, eventSnap.data());
         if (!currentEvent) throw new Error('Failed to map current event data.');
 
-        const updatesToApply: Record<string, any> = {
+        const updatesToApply: Record<string, unknown> = {
             status: newStatus,
             lastUpdatedAt: serverTimestamp(),
         };
         
         const currentLifecycleTimestamps = currentEvent.lifecycleTimestamps || {};
-        let updatedLifecycleTimestamps: Partial<EventLifecycleTimestamps> = {};
+        const updatedLifecycleTimestamps: Partial<EventLifecycleTimestamps> = {};
 
         switch (newStatus) {
             case EventStatus.Approved:
-                (updatedLifecycleTimestamps as any).approvedAt = serverTimestamp();
+                (updatedLifecycleTimestamps as Record<string, unknown>)['approvedAt'] = serverTimestamp();
                 break;
             case EventStatus.Closed:
                 throw new Error(`Use 'closeEventAndAwardXP' service function to close an event.`);
@@ -61,23 +62,23 @@ export async function updateEventStatusInFirestore(
         }
         
         if (Object.keys(updatedLifecycleTimestamps).length > 0) {
-            updatesToApply.lifecycleTimestamps = {
+            updatesToApply['lifecycleTimestamps'] = {
                 ...currentLifecycleTimestamps,
                 ...updatedLifecycleTimestamps
             };
         }
 
-        await updateDoc(eventRef, updatesToApply);
-        const { lastUpdatedAt, ...otherUpdates } = updatesToApply;
-        const returnedUpdates: Partial<Event> = { ...otherUpdates };
-        if (updatesToApply.lifecycleTimestamps) {
-            returnedUpdates.lifecycleTimestamps = updatesToApply.lifecycleTimestamps as Partial<EventLifecycleTimestamps>;
+        await updateDoc(eventRef, updatesToApply as unknown as Record<string, any>);
+        const { lastUpdatedAt: _lastUpdatedAt, ...otherUpdates } = updatesToApply;
+        const returnedUpdates: Partial<Event> = { ...otherUpdates } as Partial<Event>;
+        if (updatesToApply['lifecycleTimestamps']) {
+            returnedUpdates.lifecycleTimestamps = updatesToApply['lifecycleTimestamps'] as Partial<EventLifecycleTimestamps>;
         }
-         if (updatesToApply.status) {
-            returnedUpdates.status = updatesToApply.status as EventStatus;
+         if (updatesToApply['status']) {
+            returnedUpdates.status = updatesToApply['status'] as EventStatus;
         }
-        if (updatesToApply.votingOpen !== undefined) {
-            returnedUpdates.votingOpen = updatesToApply.votingOpen as boolean;
+        if (updatesToApply['votingOpen'] !== undefined) {
+            returnedUpdates.votingOpen = updatesToApply['votingOpen'] as boolean;
         }
         return returnedUpdates; 
 
@@ -100,6 +101,7 @@ export const closeEvent = async (
   if (!eventId) throw new Error('Event ID is required.');
   if (!closingUser?.uid) throw new Error('Closing user and their UID are required.');
 
+  const db = getFirestoreInstance();
   const eventRef = doc(db, EVENTS_COLLECTION, eventId);
 
   try {
@@ -145,7 +147,7 @@ export const closeEvent = async (
     }
 
     // Update event status to Closed and set lifecycle timestamps
-    const updatePayload: Record<string, any> = {
+    const updatePayload: Record<string, unknown> = {
       status: EventStatus.Closed,
       lastUpdatedAt: serverTimestamp(),
       lifecycleTimestamps: {
@@ -157,7 +159,7 @@ export const closeEvent = async (
       xpAwardedAt: serverTimestamp(),
     };
 
-    await updateDoc(eventRef, updatePayload);
+    await updateDoc(eventRef, updatePayload as unknown as Record<string, any>);
 
     return {
       success: true,
@@ -180,6 +182,7 @@ export async function deleteEventRequestInFirestore(eventId: string, userId: str
     if (!eventId) throw new Error('Event ID is required to delete the request.');
     if (!userId) throw new Error('User ID is required for validation.');
 
+    const db = getFirestoreInstance();
     const eventRef = doc(db, EVENTS_COLLECTION, eventId);
     try {
         const eventSnap = await getDoc(eventRef);

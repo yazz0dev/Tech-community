@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { signOut as firebaseSignOut } from 'firebase/auth';
-import { auth } from '@/firebase';
+import { isFirebaseEnabled, getAuthInstance } from '@/firebase';
 import { deepClone, isEmpty } from '@/utils/eventUtils';
 import { useNotificationStore } from './notificationStore';
 import { useAppStore } from './appStore'; // Renamed to studentAppStore for clarity in this file
@@ -292,10 +292,14 @@ export const useProfileStore = defineStore('studentProfile', () => {
   }
 
   async function clearStudentSession(performFirebaseSignOut: boolean = false) {
-    if (performFirebaseSignOut && auth.currentUser) {
-        try {
-            await firebaseSignOut(auth);
-        } catch (e: unknown) {
+    if (performFirebaseSignOut && isFirebaseEnabled()) {
+        const authInstance = getAuthInstance();
+        if (authInstance.currentUser) {
+            try {
+                await firebaseSignOut(authInstance);
+            } catch (e: unknown) {
+                // Silently handle sign out errors
+            }
         }
     }
     currentStudent.value = null;

@@ -7,7 +7,7 @@ import {
     documentId,
     Timestamp
 } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { getFirestoreInstance } from '@/firebase';
 import { 
     type Event, // Assuming Event type is correctly defined and imported
     EventFormat, 
@@ -43,7 +43,7 @@ export const fetchStudentPortfolioProjects = async (
         const batchIds = relevantEventIds.slice(i, i + 30);
         if (batchIds.length === 0) continue;
         
-        const eventQuery = query(collection(db, "events"), where(documentId(), 'in', batchIds));
+        const eventQuery = query(collection(getFirestoreInstance(), "events"), where(documentId(), 'in', batchIds));
         const eventSnapshot = await getDocs(eventQuery);
         
         eventSnapshot.forEach(eventDoc => {
@@ -106,7 +106,7 @@ export const fetchStudentEventHistory = async (
         const batchIds = relevantEventIds.slice(i, i + 30);
         if (batchIds.length === 0) continue;
         
-        const eventQuery = query(collection(db, "events"), where(documentId(), 'in', batchIds));
+        const eventQuery = query(collection(getFirestoreInstance(), "events"), where(documentId(), 'in', batchIds));
         const eventSnapshot = await getDocs(eventQuery);
         
         eventSnapshot.forEach(eventDoc => {
@@ -169,7 +169,7 @@ export const fetchStudentEventParticipationCount = async (
       const batchIds = participatedEventIDs.slice(i, i + 30);
       if (batchIds.length === 0) continue;
 
-      const eventQuery = query(collection(db, "events"), where(documentId(), 'in', batchIds));
+      const eventQuery = query(collection(getFirestoreInstance(), "events"), where(documentId(), 'in', batchIds));
       const eventSnapshot = await getDocs(eventQuery);
       
       eventSnapshot.forEach(eventDoc => {
@@ -260,7 +260,7 @@ export const fetchEnhancedStudentPortfolioProjects = async (
       const batchIds = relevantEventIds.slice(i, i + 30);
       if (batchIds.length === 0) continue;
       
-      const eventQuery = query(collection(db, "events"), where(documentId(), 'in', batchIds));
+      const eventQuery = query(collection(getFirestoreInstance(), "events"), where(documentId(), 'in', batchIds));
       const eventSnapshot = await getDocs(eventQuery);
       
       eventSnapshot.forEach(eventDoc => {
@@ -339,7 +339,7 @@ export const fetchEnhancedStudentEventHistory = async (
       const batchIds = relevantEventIds.slice(i, i + 30);
       if (batchIds.length === 0) continue;
       
-      const eventQuery = query(collection(db, "events"), where(documentId(), 'in', batchIds));
+      const eventQuery = query(collection(getFirestoreInstance(), "events"), where(documentId(), 'in', batchIds));
       const eventSnapshot = await getDocs(eventQuery);
       
       eventSnapshot.forEach(eventDoc => {

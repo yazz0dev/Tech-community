@@ -1,7 +1,7 @@
 // src/stores/appStore.ts
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { db } from '@/firebase';
+import { isFirebaseEnabled, getFirestoreInstance } from '@/firebase';
 import { enableNetwork, disableNetwork } from 'firebase/firestore';
 import { useNotificationStore } from './notificationStore';
 import { useEventStore } from './eventStore';
@@ -66,12 +66,22 @@ export const useAppStore = defineStore('studentApp', () => {
     isOnline.value = status;
     
     try {
+      if (!isFirebaseEnabled()) {
+        // Firebase not enabled, just show notification
+        if (status) {
+          notificationStore.showNotification({ message: 'You are back online!', type: 'success' });
+        } else {
+          notificationStore.showNotification({ message: 'You are offline. Some features are limited.', type: 'warning' });
+        }
+        return;
+      }
+      
       if (status) {
-        await enableNetwork(db);
+        await enableNetwork(getFirestoreInstance());
         notificationStore.showNotification({ message: 'You are back online!', type: 'success' });
         await syncOfflineActions();
       } else {
-        await disableNetwork(db);
+        await disableNetwork(getFirestoreInstance());
         notificationStore.showNotification({ message: 'You are offline. Some features are limited.', type: 'warning' });
       }
     } catch (e) {

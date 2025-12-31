@@ -19,8 +19,8 @@ export interface IDataAdapter {
   updateStudent(id: string, student: Partial<Student>): Promise<void>;
   
   // Query operations
-  queryEvents(filters: Record<string, any>): Promise<Event[]>;
-  queryStudents(filters: Record<string, any>): Promise<Student[]>;
+  queryEvents(filters: Record<string, unknown>): Promise<Event[]>;
+  queryStudents(filters: Record<string, unknown>): Promise<Student[]>;
 }
 
 // Factory function to get the appropriate data adapter based on config

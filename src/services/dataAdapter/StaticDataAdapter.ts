@@ -55,7 +55,10 @@ export class StaticDataAdapter implements IDataAdapter {
     if (index === -1) {
       throw new Error(`Event not found: ${id}`);
     }
-    events[index] = { ...events[index], ...updates };
+    const existingEvent = events[index];
+    if (existingEvent) {
+      events[index] = { ...existingEvent, ...updates };
+    }
     this.eventsCache = events;
     
     // Optionally save to localStorage
@@ -100,18 +103,23 @@ export class StaticDataAdapter implements IDataAdapter {
     if (index === -1) {
       throw new Error(`Student not found: ${id}`);
     }
-    students[index] = { ...students[index], ...updates };
+    const existingStudent = students[index];
+    if (existingStudent) {
+      students[index] = { ...existingStudent, ...updates };
+    }
     this.studentsCache = students;
     
     // Optionally save to localStorage
     this.saveToLocalStorage('students', students);
   }
 
-  async queryEvents(filters: Record<string, any>): Promise<Event[]> {
+  async queryEvents(filters: Record<string, unknown>): Promise<Event[]> {
     const events = await this.getEvents();
     return events.filter(event => {
       return Object.entries(filters).every(([key, value]) => {
-        const eventValue = (event as any)[key];
+        // Use type assertion to access event properties safely
+        const eventAny = event as unknown as Record<string, unknown>;
+        const eventValue = eventAny[key];
         if (Array.isArray(value)) {
           return value.includes(eventValue);
         }
@@ -120,11 +128,13 @@ export class StaticDataAdapter implements IDataAdapter {
     });
   }
 
-  async queryStudents(filters: Record<string, any>): Promise<Student[]> {
+  async queryStudents(filters: Record<string, unknown>): Promise<Student[]> {
     const students = await this.getStudents();
     return students.filter(student => {
       return Object.entries(filters).every(([key, value]) => {
-        const studentValue = (student as any)[key];
+        // Use type assertion to access student properties safely
+        const studentAny = student as unknown as Record<string, unknown>;
+        const studentValue = studentAny[key];
         if (Array.isArray(value)) {
           return value.includes(studentValue);
         }
@@ -134,10 +144,10 @@ export class StaticDataAdapter implements IDataAdapter {
   }
 
   private generateId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
   }
 
-  private saveToLocalStorage(key: string, data: any): void {
+  private saveToLocalStorage(key: string, data: unknown): void {
     try {
       localStorage.setItem(`techcomm_${key}`, JSON.stringify(data));
     } catch (error) {

@@ -6,7 +6,7 @@ import {
   serverTimestamp,
   arrayRemove
 } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { getFirestoreInstance } from '@/firebase';
 import { 
   EventStatus, 
   type Submission,
@@ -37,6 +37,7 @@ export const submitProject = async (
     throw new Error("Invalid Project Link URL."); 
   }
 
+  const db = getFirestoreInstance();
   const eventRef = doc(db, EVENTS_COLLECTION, eventId);
   try {
     const eventSnap = await getDoc(eventRef);
@@ -58,7 +59,7 @@ export const submitProject = async (
       link: submissionData.link.trim(),
       description: submissionData.description || null,
       submittedBy: studentId,
-      submittedAt: serverTimestamp() as any,
+      submittedAt: serverTimestamp() as Submission['submittedAt'],
     };
 
     if (eventData.details.format === EventFormat.Team) {
@@ -91,7 +92,7 @@ export const submitProject = async (
     const message = error instanceof Error ? error.message : `Failed to submit project for event ${eventId}.`;
     console.error(`Error submitting project for event ${eventId}:`, error);
     // Add specific Firebase error check if needed
-    if (error && typeof (error as any).code === 'string' && (error as any).code === 'permission-denied') {
+    if (error && typeof (error as Record<string, unknown>)['code'] === 'string' && (error as Record<string, unknown>)['code'] === 'permission-denied') {
         throw new Error("You don't have permission to submit to this event.");
     }
     throw new Error(message);
@@ -106,6 +107,7 @@ export const submitProject = async (
 export async function joinEventByStudentInFirestore(eventId: string, studentId: string): Promise<void> {
     if (!eventId || !studentId) throw new Error('Event ID and Student ID are required.');
 
+    const db = getFirestoreInstance();
     const eventRef = doc(db, EVENTS_COLLECTION, eventId);
     try {
         const eventSnap = await getDoc(eventRef);
@@ -147,6 +149,7 @@ export async function joinEventByStudentInFirestore(eventId: string, studentId: 
 export async function leaveEventByStudentInFirestore(eventId: string, studentId: string): Promise<void> {
     if (!eventId || !studentId) throw new Error('Event ID and Student ID are required.');
 
+    const db = getFirestoreInstance();
     const eventRef = doc(db, EVENTS_COLLECTION, eventId);
     try {
         const eventSnap = await getDoc(eventRef);
@@ -170,7 +173,7 @@ export async function leaveEventByStudentInFirestore(eventId: string, studentId:
         // Assuming it would modify 'updates' if user is found in participants or teams.
         // For example, if user is in participants:
         if (eventData.participants?.includes(studentId)) {
-            updates.participants = arrayRemove(studentId) as any;
+            updates['participants'] = arrayRemove(studentId);
             userFoundAndRemoved = true;
         }
         // Add similar logic for team removal if applicable for this function
@@ -179,7 +182,7 @@ export async function leaveEventByStudentInFirestore(eventId: string, studentId:
             throw new Error('You are not currently registered as a participant or team member in this event.');
         }
 
-        await updateDoc(eventRef, updates as any); // Need cast for Firestore type compatibility
+        await updateDoc(eventRef, updates as unknown as Record<string, any>);
     } catch (error: unknown) { // Changed from any
         const message = error instanceof Error ? error.message : `Failed to leave event ${eventId}.`;
         throw new Error(message);
